@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>Ajánlatok – Mozifoglaló</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="main_page.css">
+</head>
+
+<script>
+fetch("http://localhost:3000/filmek")
+    .then(res => res.json())
+    .then(data => {
+        const grid = document.querySelector(".movie-grid");
+
+        grid.innerHTML = "";
+
+        data.forEach(film => {
+            grid.innerHTML += `
+                <div class="movie-card">
+                    <div class="movie-poster"></div>
+                    <div class="movie-content">
+                        <h3 class="movie-title">${film.cim}</h3>
+                        <p class="movie-meta">
+                            ${film.mufaj} • ${film.hossz} perc • ${film.korhatar}+
+                        </p>
+                        <div class="movie-price">${film.ar || "2 000"} Ft</div>
+                    </div>
+                </div>
+            `;
+        });
+    });
+</script>
+
+<body>
+
+<header class="navbar">
+    <div class="navbar-inner">
+        <div class="logo">
+            <div class="logo-mark"></div>
+            <span>MOZIFoglaló</span>
+        </div>
+        <nav class="nav-links">
+            <a href="main_page.html" class="nav-link">MŰSORON</a>
+            <a href="#" class="nav-link">AJÁNLATOK</a>
+            <a href="étel_ital.html" class="nav-link">ÉTEL & ITAL</a>
+        </nav>
+        <div class="nav-actions">
+            <button class="nav-btn secondary">Bejelentkezés</button>
+            <button class="nav-btn primary">Regisztráció</button>
+        </div>
+    </div>
+</header>
+
+<main>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-text">
+        <div class="hero-kicker">Kedvezmények</div>
+        <h1 class="hero-title">
+            Aktuális <span>ajánlatok</span> és akciók
+        </h1>
+        <p class="hero-subtitle">
+            Spórolj jegyvásárláskor, válassz kedvezményes csomagokat és élvezd a mozit olcsóbban!
+        </p>
+    </div>
+</section>
+
+<!-- AKCIÓK -->
+<section class="section">
+    <div class="section-header">
+        <h2 class="section-title">🔥 Heti akciók</h2>
+    </div>
+
+    <div class="movie-grid">
+
+        <div class="movie-card">
+            <div class="movie-poster"></div>
+            <div class="movie-content">
+                <h3 class="movie-title">Keddi mozinap</h3>
+                <p class="movie-meta">-20% minden jegyre</p>
+                <div class="movie-price">1 600 Ft-tól</div>
+            </div>
+        </div>
+
+        <div class="movie-card">
+            <div class="movie-poster"></div>
+            <div class="movie-content">
+                <h3 class="movie-title">Diák kedvezmény</h3>
+                <p class="movie-meta">Felmutatott diákigazolvánnyal</p>
+                <div class="movie-price">1 800 Ft</div>
+            </div>
+        </div>
+
+        <div class="movie-card">
+            <div class="movie-poster"></div>
+            <div class="movie-content">
+                <h3 class="movie-title">Családi csomag</h3>
+                <p class="movie-meta">4 jegy + popcorn kedvezmény</p>
+                <div class="movie-price">5 990 Ft</div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- PÁROS AJÁNLATOK -->
+<section class="section">
+    <div class="section-header">
+        <h2 class="section-title">💑 Páros ajánlatok</h2>
+    </div>
+
+    <div class="movie-grid">
+
+        <div class="movie-card">
+            <div class="movie-poster"></div>
+            <div class="movie-content">
+                <h3 class="movie-title">Date Night csomag</h3>
+                <p class="movie-meta">2 jegy + popcorn + ital</p>
+                <div class="movie-price">4 990 Ft</div>
+            </div>
+        </div>
+
+        <div class="movie-card">
+            <div class="movie-poster"></div>
+            <div class="movie-content">
+                <h3 class="movie-title">Romantikus este</h3>
+                <p class="movie-meta">Prémium ülőhely + ajándék snack</p>
+                <div class="movie-price">6 490 Ft</div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- KUPONOK -->
+<section class="section">
+    <div class="section-header">
+        <h2 class="section-title">🎫 Kuponok</h2>
+    </div>
+
+    <div class="movie-grid">
+
+        <div class="movie-card">
+            <div class="movie-poster"></div>
+            <div class="movie-content">
+                <h3 class="movie-title">WELCOME10</h3>
+                <p class="movie-meta">10% kedvezmény első vásárlásra</p>
+                <div class="movie-price">-10%</div>
+            </div>
+        </div>
+
+        <div class="movie-card">
+            <div class="movie-poster"></div>
+            <div class="movie-content">
+                <h3 class="movie-title">MOVIE50</h3>
+                <p class="movie-meta">50% popcorn akció kiválasztott filmekhez</p>
+                <div class="movie-price">-50%</div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+</main>
+
+<footer class="footer">
+    © 2025 Mozifoglaló – Ajánlatok oldal
+</footer>
+
+</body>
+</html>
