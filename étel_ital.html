@@ -1,11 +1,121 @@
 <!DOCTYPE html>
 <html lang="hu">
 <head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Étel & Ital – Mozifoglaló</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="main_page.css">
     <script src="auth.js" defer></script>
+    <script src="cart.js" defer></script>
+    <style>
+        .food-card {
+            background: radial-gradient(circle at top, #1b2238, #101628 55%);
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            flex-direction: column;
+        }
+        .food-img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            display: block;
+        }
+        .food-img-placeholder {
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(145deg, #f7931e, #ff6f00);
+        }
+        .food-body {
+            padding: 0.75rem 0.85rem 0.85rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            flex: 1;
+        }
+        .food-name  { font-size: 0.9rem; font-weight: 600; }
+        .food-desc  { font-size: 0.75rem; color: var(--text-muted); }
+        .food-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: auto;
+            padding-top: 0.6rem;
+        }
+        .food-price {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #ffcc00;
+        }
+        .food-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .qty-btn {
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.06);
+            color: #fff; font-size: 1rem; line-height: 1;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.15s, border-color 0.15s;
+        }
+        .qty-btn:hover {
+            background: rgba(247,147,30,0.2);
+            border-color: #f7931e;
+        }
+        .qty-display {
+            min-width: 18px;
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .add-btn {
+            padding: 0.3rem 0.75rem;
+            border-radius: 999px;
+            border: none;
+            background: linear-gradient(135deg, #f7931e, #ffb347);
+            color: #1b1305;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            letter-spacing: 0.06em;
+            transition: filter 0.15s;
+        }
+        .add-btn:hover { filter: brightness(1.08); }
+
+        /* Kosár gomb a navbarban */
+        .cart-nav-btn {
+            position: relative;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 999px;
+            padding: 0.4rem 0.9rem;
+            color: #fff; font-size: 0.8rem;
+            cursor: pointer;
+            display: flex; align-items: center; gap: 0.4rem;
+            transition: background 0.15s, border-color 0.15s;
+            text-decoration: none;
+        }
+        .cart-nav-btn:hover {
+            background: rgba(247,147,30,0.12);
+            border-color: rgba(247,147,30,0.4);
+        }
+        .cart-badge {
+            background: linear-gradient(135deg, #f7931e, #ffb347);
+            color: #1b1305;
+            font-size: 0.65rem; font-weight: 800;
+            width: 18px; height: 18px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .cart-badge.hidden { display: none; }
+    </style>
 </head>
 <body>
 
@@ -21,6 +131,10 @@
             <a href="#" class="nav-link">ÉTEL & ITAL</a>
         </nav>
         <div class="nav-actions">
+            <a href="kosar.html" class="cart-nav-btn" id="cartNavBtn">
+                🛒 Kosár
+                <span class="cart-badge hidden" id="cartBadge">0</span>
+            </a>
             <button class="nav-btn secondary">Bejelentkezés</button>
             <button class="nav-btn primary">Regisztráció</button>
         </div>
@@ -47,32 +161,52 @@
     <div class="section-header">
         <h2 class="section-title">🍿 Popcorn</h2>
     </div>
-
     <div class="movie-grid">
-        <div class="movie-card">
-            <div class="movie-content">
-                <img src="képek/sós popcorn.png" class="movie-poster">
-                <h3 class="movie-title">Sós popcorn</h3>
-                <p class="movie-meta">Klasszikus mozis snack</p>
-                <p class="movie-price">1290 Ft</p>
+        <div class="food-card">
+            <img src="képek/sós popcorn.png" class="food-img" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'food-img-placeholder'}))">
+            <div class="food-body">
+                <div class="food-name">Sós popcorn</div>
+                <div class="food-desc">Klasszikus mozis snack</div>
+                <div class="food-footer">
+                    <span class="food-price">1 290 Ft</span>
+                    <div class="food-controls" data-id="1" data-nev="Sós popcorn" data-ar="1290">
+                        <button class="qty-btn minus">−</button>
+                        <span class="qty-display">0</span>
+                        <button class="qty-btn plus">+</button>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="movie-card">
-            <div class="movie-content">
-                <img src="képek/cheddar sajtos popcorn.png" class="movie-poster">
-                <h3 class="movie-title">Cheddar sajtos popcorn</h3>
-                <p class="movie-meta">Ízletes sajtos változat</p>
-                <p class="movie-price">1490 Ft</p>
+        <div class="food-card">
+            <img src="képek/cheddar sajtos popcorn.png" class="food-img" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'food-img-placeholder'}))">
+            <div class="food-body">
+                <div class="food-name">Cheddar sajtos popcorn</div>
+                <div class="food-desc">Ízletes sajtos változat</div>
+                <div class="food-footer">
+                    <span class="food-price">1 490 Ft</span>
+                    <div class="food-controls" data-id="2" data-nev="Cheddar sajtos popcorn" data-ar="1490">
+                        <button class="qty-btn minus">−</button>
+                        <span class="qty-display">0</span>
+                        <button class="qty-btn plus">+</button>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="movie-card">
-            <div class="movie-content">
-                <img src="képek/toffee popcorn.png" class="movie-poster">
-                <h3 class="movie-title">Édes (toffee) popcorn</h3>
-                <p class="movie-meta">Karamellás élvezet</p>
-                <p class="movie-price">1390 Ft</p>
+        <div class="food-card">
+            <img src="képek/toffee popcorn.png" class="food-img" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'food-img-placeholder'}))">
+            <div class="food-body">
+                <div class="food-name">Édes (toffee) popcorn</div>
+                <div class="food-desc">Karamellás élvezet</div>
+                <div class="food-footer">
+                    <span class="food-price">1 390 Ft</span>
+                    <div class="food-controls" data-id="3" data-nev="Édes (toffee) popcorn" data-ar="1390">
+                        <button class="qty-btn minus">−</button>
+                        <span class="qty-display">0</span>
+                        <button class="qty-btn plus">+</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -83,23 +217,36 @@
     <div class="section-header">
         <h2 class="section-title">🧀 Nachos</h2>
     </div>
-
     <div class="movie-grid">
-        <div class="movie-card">
-            <div class="movie-content">
-                <img src="képek/klasszikus nachos.png" class="movie-poster">
-                <h3 class="movie-title">Klasszikus nachos</h3>
-                <p class="movie-meta">Sajtszósszal vagy salsával</p>
-                <p class="movie-price">1790 Ft</p>
+        <div class="food-card">
+            <img src="képek/klasszikus nachos.png" class="food-img" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'food-img-placeholder'}))">
+            <div class="food-body">
+                <div class="food-name">Klasszikus nachos</div>
+                <div class="food-desc">Sajtszósszal vagy salsával</div>
+                <div class="food-footer">
+                    <span class="food-price">1 790 Ft</span>
+                    <div class="food-controls" data-id="4" data-nev="Klasszikus nachos" data-ar="1790">
+                        <button class="qty-btn minus">−</button>
+                        <span class="qty-display">0</span>
+                        <button class="qty-btn plus">+</button>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="movie-card">
-            <div class="movie-content">
-                <img src="képek/chili-lime nachos.png" class="movie-poster">
-                <h3 class="movie-title">Chili-lime nachos</h3>
-                <p class="movie-meta">Enyhén csípős íz</p>
-                <p class="movie-price">1890 Ft</p>
+        <div class="food-card">
+            <img src="képek/chili-lime nachos.png" class="food-img" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'food-img-placeholder'}))">
+            <div class="food-body">
+                <div class="food-name">Chili-lime nachos</div>
+                <div class="food-desc">Enyhén csípős íz</div>
+                <div class="food-footer">
+                    <span class="food-price">1 890 Ft</span>
+                    <div class="food-controls" data-id="5" data-nev="Chili-lime nachos" data-ar="1890">
+                        <button class="qty-btn minus">−</button>
+                        <span class="qty-display">0</span>
+                        <button class="qty-btn plus">+</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -110,23 +257,36 @@
     <div class="section-header">
         <h2 class="section-title">🥤 Italok</h2>
     </div>
-
     <div class="movie-grid">
-        <div class="movie-card">
-            <div class="movie-content">
-                <img src="képek/üdítők.jpg" class="movie-poster">
-                <h3 class="movie-title">Üdítők</h3>
-                <p class="movie-meta">Cola, narancs, víz</p>
-                <p class="movie-price">990 Ft</p>
+        <div class="food-card">
+            <img src="képek/üdítők.jpg" class="food-img" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'food-img-placeholder'}))">
+            <div class="food-body">
+                <div class="food-name">Üdítők</div>
+                <div class="food-desc">Cola, narancs, víz</div>
+                <div class="food-footer">
+                    <span class="food-price">990 Ft</span>
+                    <div class="food-controls" data-id="6" data-nev="Üdítők" data-ar="990">
+                        <button class="qty-btn minus">−</button>
+                        <span class="qty-display">0</span>
+                        <button class="qty-btn plus">+</button>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="movie-card">
-            <div class="movie-content">
-                <img src="képek/icee jégkása.jpg" class="movie-poster">
-                <h3 class="movie-title">ICEE jégkása</h3>
-                <p class="movie-meta">Jeges frissítő ital</p>
-                <p class="movie-price">1190 Ft</p>
+        <div class="food-card">
+            <img src="képek/icee jégkása.jpg" class="food-img" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'food-img-placeholder'}))">
+            <div class="food-body">
+                <div class="food-name">ICEE jégkása</div>
+                <div class="food-desc">Jeges frissítő ital</div>
+                <div class="food-footer">
+                    <span class="food-price">1 190 Ft</span>
+                    <div class="food-controls" data-id="7" data-nev="ICEE jégkása" data-ar="1190">
+                        <button class="qty-btn minus">−</button>
+                        <span class="qty-display">0</span>
+                        <button class="qty-btn plus">+</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -137,23 +297,36 @@
     <div class="section-header">
         <h2 class="section-title">🎟️ Ajánlatok</h2>
     </div>
-
     <div class="movie-grid">
-        <div class="movie-card">
-            <div class="movie-content">
-                <img src="képek/páros popcorn menü.png" class="movie-poster">
-                <h3 class="movie-title">Páros popcorn menü</h3>
-                <p class="movie-meta">2 ital + nagy popcorn</p>
-                <p class="movie-price">3490 Ft</p>
+        <div class="food-card">
+            <img src="képek/páros popcorn menü.png" class="food-img" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'food-img-placeholder'}))">
+            <div class="food-body">
+                <div class="food-name">Páros popcorn menü</div>
+                <div class="food-desc">2 ital + nagy popcorn</div>
+                <div class="food-footer">
+                    <span class="food-price">3 490 Ft</span>
+                    <div class="food-controls" data-id="8" data-nev="Páros popcorn menü" data-ar="3490">
+                        <button class="qty-btn minus">−</button>
+                        <span class="qty-display">0</span>
+                        <button class="qty-btn plus">+</button>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="movie-card">
-            <div class="movie-content">
-                <img src="képek/családi menü.png" class="movie-poster">
-                <h3 class="movie-title">Családi menü</h3>
-                <p class="movie-meta">Popcorn + nachos + italok</p>
-                <p class="movie-price">5490 Ft</p>
+        <div class="food-card">
+            <img src="képek/családi menü.png" class="food-img" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'food-img-placeholder'}))">
+            <div class="food-body">
+                <div class="food-name">Családi menü</div>
+                <div class="food-desc">Popcorn + nachos + italok</div>
+                <div class="food-footer">
+                    <span class="food-price">5 490 Ft</span>
+                    <div class="food-controls" data-id="9" data-nev="Családi menü" data-ar="5490">
+                        <button class="qty-btn minus">−</button>
+                        <span class="qty-display">0</span>
+                        <button class="qty-btn plus">+</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -164,6 +337,6 @@
 <footer class="footer">
     © 2025 Mozifoglaló – Étel & Ital oldal
 </footer>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
