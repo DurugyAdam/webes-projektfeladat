@@ -5,32 +5,8 @@
     <title>Ajánlatok – Mozifoglaló</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="main_page.css">
+    <script src="auth.js" defer></script>
 </head>
-
-<script>
-fetch("http://localhost:3000/filmek")
-    .then(res => res.json())
-    .then(data => {
-        const grid = document.querySelector(".movie-grid");
-
-        grid.innerHTML = "";
-
-        data.forEach(film => {
-            grid.innerHTML += `
-                <div class="movie-card">
-                    <div class="movie-poster"></div>
-                    <div class="movie-content">
-                        <h3 class="movie-title">${film.cim}</h3>
-                        <p class="movie-meta">
-                            ${film.mufaj} • ${film.hossz} perc • ${film.korhatar}+
-                        </p>
-                        <div class="movie-price">${film.ar || "2 000"} Ft</div>
-                    </div>
-                </div>
-            `;
-        });
-    });
-</script>
 
 <body>
 
@@ -74,7 +50,6 @@ fetch("http://localhost:3000/filmek")
     </div>
 
     <div class="movie-grid">
-
         <div class="movie-card">
             <div class="movie-poster"></div>
             <div class="movie-content">
@@ -83,7 +58,6 @@ fetch("http://localhost:3000/filmek")
                 <div class="movie-price">1 600 Ft-tól</div>
             </div>
         </div>
-
         <div class="movie-card">
             <div class="movie-poster"></div>
             <div class="movie-content">
@@ -92,7 +66,6 @@ fetch("http://localhost:3000/filmek")
                 <div class="movie-price">1 800 Ft</div>
             </div>
         </div>
-
         <div class="movie-card">
             <div class="movie-poster"></div>
             <div class="movie-content">
@@ -101,7 +74,6 @@ fetch("http://localhost:3000/filmek")
                 <div class="movie-price">5 990 Ft</div>
             </div>
         </div>
-
     </div>
 </section>
 
@@ -112,7 +84,6 @@ fetch("http://localhost:3000/filmek")
     </div>
 
     <div class="movie-grid">
-
         <div class="movie-card">
             <div class="movie-poster"></div>
             <div class="movie-content">
@@ -121,7 +92,6 @@ fetch("http://localhost:3000/filmek")
                 <div class="movie-price">4 990 Ft</div>
             </div>
         </div>
-
         <div class="movie-card">
             <div class="movie-poster"></div>
             <div class="movie-content">
@@ -130,7 +100,6 @@ fetch("http://localhost:3000/filmek")
                 <div class="movie-price">6 490 Ft</div>
             </div>
         </div>
-
     </div>
 </section>
 
@@ -141,7 +110,6 @@ fetch("http://localhost:3000/filmek")
     </div>
 
     <div class="movie-grid">
-
         <div class="movie-card">
             <div class="movie-poster"></div>
             <div class="movie-content">
@@ -150,7 +118,6 @@ fetch("http://localhost:3000/filmek")
                 <div class="movie-price">-10%</div>
             </div>
         </div>
-
         <div class="movie-card">
             <div class="movie-poster"></div>
             <div class="movie-content">
@@ -159,7 +126,6 @@ fetch("http://localhost:3000/filmek")
                 <div class="movie-price">-50%</div>
             </div>
         </div>
-
     </div>
 </section>
 
@@ -168,6 +134,12 @@ fetch("http://localhost:3000/filmek")
 <footer class="footer">
     © 2025 Mozifoglaló – Ajánlatok oldal
 </footer>
+
+<!-- Filmek betöltése (ha kellene erre az oldalra is) -->
+<script>
+    // Ha az ajánlatok oldalon nem kell filmeket betölteni, ezt a blokkot törölheted.
+    // fetch("http://localhost:3000/filmek") ...
+</script>
 
 </body>
 </html>
