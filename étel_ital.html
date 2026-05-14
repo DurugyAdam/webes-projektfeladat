@@ -8,7 +8,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="main_page.css">
     <script src="auth.js" defer></script>
-    <script src="cart.js" defer></script>
     <style>
         .food-card {
             background: radial-gradient(circle at top, #1b2238, #101628 55%);
@@ -126,15 +125,11 @@
             <span>MOZIFoglaló</span>
         </div>
         <nav class="nav-links">
-            <a href="main_page.html" class="nav-link">MŰSORON</a>
+            <a href="műsoron.html" class="nav-link">MŰSORON</a>
             <a href="ajanlatok.html" class="nav-link">AJÁNLATOK</a>
             <a href="#" class="nav-link">ÉTEL & ITAL</a>
         </nav>
         <div class="nav-actions">
-            <a href="kosar.html" class="cart-nav-btn" id="cartNavBtn">
-                🛒 Kosár
-                <span class="cart-badge hidden" id="cartBadge">0</span>
-            </a>
             <button class="nav-btn secondary">Bejelentkezés</button>
             <button class="nav-btn primary">Regisztráció</button>
         </div>
@@ -169,11 +164,6 @@
                 <div class="food-desc">Klasszikus mozis snack</div>
                 <div class="food-footer">
                     <span class="food-price">1 290 Ft</span>
-                    <div class="food-controls" data-id="1" data-nev="Sós popcorn" data-ar="1290">
-                        <button class="qty-btn minus">−</button>
-                        <span class="qty-display">0</span>
-                        <button class="qty-btn plus">+</button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -185,11 +175,6 @@
                 <div class="food-desc">Ízletes sajtos változat</div>
                 <div class="food-footer">
                     <span class="food-price">1 490 Ft</span>
-                    <div class="food-controls" data-id="2" data-nev="Cheddar sajtos popcorn" data-ar="1490">
-                        <button class="qty-btn minus">−</button>
-                        <span class="qty-display">0</span>
-                        <button class="qty-btn plus">+</button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -201,11 +186,6 @@
                 <div class="food-desc">Karamellás élvezet</div>
                 <div class="food-footer">
                     <span class="food-price">1 390 Ft</span>
-                    <div class="food-controls" data-id="3" data-nev="Édes (toffee) popcorn" data-ar="1390">
-                        <button class="qty-btn minus">−</button>
-                        <span class="qty-display">0</span>
-                        <button class="qty-btn plus">+</button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -225,11 +205,6 @@
                 <div class="food-desc">Sajtszósszal vagy salsával</div>
                 <div class="food-footer">
                     <span class="food-price">1 790 Ft</span>
-                    <div class="food-controls" data-id="4" data-nev="Klasszikus nachos" data-ar="1790">
-                        <button class="qty-btn minus">−</button>
-                        <span class="qty-display">0</span>
-                        <button class="qty-btn plus">+</button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -241,11 +216,6 @@
                 <div class="food-desc">Enyhén csípős íz</div>
                 <div class="food-footer">
                     <span class="food-price">1 890 Ft</span>
-                    <div class="food-controls" data-id="5" data-nev="Chili-lime nachos" data-ar="1890">
-                        <button class="qty-btn minus">−</button>
-                        <span class="qty-display">0</span>
-                        <button class="qty-btn plus">+</button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -265,11 +235,6 @@
                 <div class="food-desc">Cola, narancs, víz</div>
                 <div class="food-footer">
                     <span class="food-price">990 Ft</span>
-                    <div class="food-controls" data-id="6" data-nev="Üdítők" data-ar="990">
-                        <button class="qty-btn minus">−</button>
-                        <span class="qty-display">0</span>
-                        <button class="qty-btn plus">+</button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -281,11 +246,6 @@
                 <div class="food-desc">Jeges frissítő ital</div>
                 <div class="food-footer">
                     <span class="food-price">1 190 Ft</span>
-                    <div class="food-controls" data-id="7" data-nev="ICEE jégkása" data-ar="1190">
-                        <button class="qty-btn minus">−</button>
-                        <span class="qty-display">0</span>
-                        <button class="qty-btn plus">+</button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -305,11 +265,6 @@
                 <div class="food-desc">2 ital + nagy popcorn</div>
                 <div class="food-footer">
                     <span class="food-price">3 490 Ft</span>
-                    <div class="food-controls" data-id="8" data-nev="Páros popcorn menü" data-ar="3490">
-                        <button class="qty-btn minus">−</button>
-                        <span class="qty-display">0</span>
-                        <button class="qty-btn plus">+</button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -321,11 +276,6 @@
                 <div class="food-desc">Popcorn + nachos + italok</div>
                 <div class="food-footer">
                     <span class="food-price">5 490 Ft</span>
-                    <div class="food-controls" data-id="9" data-nev="Családi menü" data-ar="5490">
-                        <button class="qty-btn minus">−</button>
-                        <span class="qty-display">0</span>
-                        <button class="qty-btn plus">+</button>
-                    </div>
                 </div>
             </div>
         </div>
