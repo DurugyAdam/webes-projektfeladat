@@ -4,389 +4,328 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>MoziFoglaló – Főoldal</title>
+    <title>MoziFoglaló – Műsoron</title>
     <link rel="stylesheet" href="main_page.css">
     <style>
-        /* Kép fix – ne takarja a szöveget */
-        .movie-poster {
-            height: 160px;
-            overflow: hidden;
-            flex-shrink: 0;
-            position: relative;
-            background: linear-gradient(145deg, #f7931e, #ff6f00);
+        .day-bar {
+            max-width: 1200px;
+            margin: 1.5rem auto 0;
+            padding: 0 1.5rem;
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            scrollbar-width: none;
         }
-        .movie-poster img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center top;
+        .day-bar::-webkit-scrollbar { display: none; }
+
+        .day-btn {
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.6rem 1.1rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.15s;
+            min-width: 64px;
+        }
+        .day-btn:hover { border-color: rgba(247,147,30,0.4); color: #fff; }
+        .day-btn.active {
+            background: linear-gradient(135deg, #f7931e, #ffb347);
+            border-color: transparent;
+            color: #1b1305;
+        }
+        .day-btn .day-name { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+        .day-btn .day-num  { font-size: 1.1rem; font-weight: 700; line-height: 1.2; }
+        .day-btn .day-month{ font-size: 0.65rem; opacity: 0.75; }
+
+        .film-lista {
+            max-width: 1200px;
+            margin: 1.5rem auto 3rem;
+            padding: 0 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .film-sor {
+            background: radial-gradient(circle at top left, #1b2238, #101628 60%);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 14px;
+            display: flex;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+        .film-sor:hover { border-color: rgba(247,147,30,0.25); }
+
+        .film-plakat {
+            width: 90px;
+            flex-shrink: 0;
+            background: linear-gradient(145deg, #f7931e, #ff6f00);
+            overflow: hidden;
+        }
+        .film-plakat img {
+            width: 100%; height: 100%;
+            object-fit: cover; object-position: center top;
             display: block;
         }
-
-        /* Carousel wrapper */
-        .carousel-wrapper {
-            position: relative;
-        }
-        .carousel-track-outer {
-            overflow: hidden;
-        }
-        .carousel-track {
-            display: grid;
-            grid-template-columns: repeat(14, calc(25% - 0.85rem));
-            gap: 1.1rem;
-            transition: transform 0.35s cubic-bezier(.4,0,.2,1);
-        }
-        @media (max-width: 900px) {
-            .carousel-track {
-                grid-template-columns: repeat(14, calc(50% - 0.6rem));
-            }
-        }
-        @media (max-width: 480px) {
-            .carousel-track {
-                grid-template-columns: repeat(14, calc(100% - 0rem));
-            }
-        }
-
-        /* Nyíl gombok */
-        .carousel-btn {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            z-index: 10;
-            width: 40px; height: 40px;
-            border-radius: 50%;
-            border: 1px solid rgba(255,255,255,0.18);
-            background: rgba(10,15,35,0.85);
-            color: #fff;
-            font-size: 1.1rem;
-            cursor: pointer;
+        .film-plakat-placeholder {
+            width: 100%; height: 100%; min-height: 130px;
             display: flex; align-items: center; justify-content: center;
-            transition: background 0.15s, border-color 0.15s, opacity 0.15s;
-            backdrop-filter: blur(6px);
+            font-size: 2rem; opacity: 0.35;
         }
-        .carousel-btn:hover {
-            background: rgba(247,147,30,0.25);
-            border-color: #f7931e;
-        }
-        .carousel-btn.disabled {
-            opacity: 0.25;
-            pointer-events: none;
-        }
-        .carousel-btn-prev { left: -20px; }
-        .carousel-btn-next { right: -20px; }
 
-        /* Pontok */
-        .carousel-dots {
+        .film-info {
+            flex: 1;
+            padding: 1rem 1.2rem;
             display: flex;
-            justify-content: center;
-            gap: 0.4rem;
-            margin-top: 1rem;
+            flex-direction: column;
+            gap: 0.55rem;
+            min-width: 0;
         }
-        .carousel-dot {
-            width: 6px; height: 6px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.2);
-            cursor: pointer;
-            transition: background 0.2s, transform 0.2s;
+        .film-fejlec {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
         }
-        .carousel-dot.active {
-            background: #f7931e;
-            transform: scale(1.3);
+        .film-cim { font-size: 1rem; font-weight: 700; color: #fff; line-height: 1.2; }
+        .film-meta-sor {
+            display: flex; flex-wrap: wrap; gap: 0.4rem;
+            align-items: center; font-size: 0.75rem; color: var(--text-muted);
+        }
+        .film-meta-sor .dot { width: 3px; height: 3px; border-radius: 50%; background: rgba(255,255,255,0.25); }
+        .film-tag {
+            font-size: 0.65rem; padding: 0.15rem 0.5rem;
+            border-radius: 999px;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-muted);
+        }
+        .film-tag.imax { border-color: rgba(247,147,30,0.4); color: #f7931e; }
+        .film-tag.x4d  { border-color: rgba(100,200,255,0.4); color: #64c8ff; }
+
+        .kor-badge {
+            flex-shrink: 0;
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.15);
+            font-size: 0.7rem; font-weight: 700;
+            color: var(--text-muted);
+            align-self: flex-start;
+        }
+
+        .vetites-blokkok { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+        .vetites-blokk   { display: flex; flex-direction: column; gap: 0.3rem; }
+        .vetites-formatum {
+            font-size: 0.65rem; text-transform: uppercase;
+            letter-spacing: 0.1em; color: var(--text-muted); font-weight: 600;
+        }
+        .idopont-gombok { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+        .idopont-gomb {
+            padding: 0.35rem 0.75rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.05);
+            color: #fff; font-size: 0.82rem; font-weight: 600;
+            cursor: pointer; transition: all 0.15s; text-decoration: none;
+            display: inline-block;
+        }
+        .idopont-gomb:hover {
+            background: rgba(247,147,30,0.15);
+            border-color: #f7931e; color: #f7931e;
+        }
+        .idopont-gomb.imax-gomb { border-color: rgba(247,147,30,0.3); color: #ffb347; }
+        .idopont-gomb.imax-gomb:hover { background: rgba(247,147,30,0.2); }
+
+        @media (max-width: 600px) {
+            .film-plakat { width: 70px; }
+            .film-info   { padding: 0.75rem 0.9rem; }
+            .film-cim    { font-size: 0.9rem; }
         }
     </style>
 </head>
 <body>
-    <header class="navbar">
-        <div class="navbar-inner">
-            <div class="logo">
-                <div class="logo-mark"></div>
-                <span>MOZIFoglaló</span>
-            </div>
-            <nav class="nav-links">
-                <a href="#" class="nav-link">MŰSORON</a>
-                <a href="ajanlatok.html" class="nav-link">AJÁNLATOK</a>
-                <a href="étel_ital.html" class="nav-link">ÉTEL & ITAL</a>
-            </nav>
-            <div class="nav-actions">
-                <button class="nav-btn secondary" id="openLogin">Bejelentkezés</button>
-                <button class="nav-btn primary" id="openReg">Regisztráció</button>
+
+<header class="navbar">
+    <div class="navbar-inner">
+        <div class="logo">
+            <div class="logo-mark"></div>
+            <span>MOZIFoglaló</span>
+        </div>
+        <nav class="nav-links">
+            <a href="#" class="nav-link">MŰSORON</a>
+            <a href="ajanlatok.html" class="nav-link">AJÁNLATOK</a>
+            <a href="étel_ital.html" class="nav-link">ÉTEL & ITAL</a>
+        </nav>
+        <div class="nav-actions">
+            <button class="nav-btn secondary" id="openLogin">Bejelentkezés</button>
+            <button class="nav-btn primary" id="openReg">Regisztráció</button>
+        </div>
+    </div>
+</header>
+
+<main>
+    <section class="hero" style="margin-bottom:0.5rem;">
+        <div class="hero-text">
+            <div class="hero-kicker">Most a mozikban</div>
+            <h1 class="hero-title">Foglalj <span>jegyet</span> kedvenc filmedre.</h1>
+            <p class="hero-subtitle">Válaszd ki a napot, a filmet és az időpontot – a jegyed máris a tiéd.</p>
+            <div class="hero-meta">
+                <span><span class="hero-meta-dot"></span> Budapest, Debrecen, Győr és még több város</span>
+                <span><span class="hero-meta-dot"></span> 2D, 3D, IMAX, 4DX</span>
             </div>
         </div>
-    </header>
-
-    <main>
-        <section class="hero">
-            <div class="hero-text">
-                <div class="hero-kicker">Most a mozikban</div>
-                <h1 class="hero-title">
-                    Foglalj <span>jegyet</span> kedvenc filmedre pár kattintással.
-                </h1>
-                <p class="hero-subtitle">
-                    Válaszd ki a filmet, az időpontot és az ülőhelyet – a jegyed máris a tiéd.
-                </p>
-                <div class="hero-actions">
-                    <button class="hero-btn primary">Jegyfoglalás</button>
-                    <button class="hero-btn secondary">Mai műsor</button>
-                </div>
-                <div class="hero-meta">
-                    <span><span class="hero-meta-dot"></span> Budapest, Debrecen, Győr és még több város</span>
-                    <span><span class="hero-meta-dot"></span> 2D, 3D, IMAX, 4DX</span>
-                </div>
-            </div>
-
-            <aside class="hero-poster">
-                <div class="hero-poster-overlay"></div>
-                <div class="hero-poster-inner">
-                    <div>
-                        <div class="hero-poster-tag">Kiemelt premier</div>
-                        <div class="hero-poster-title">Galaktikus Küldetés</div>
-                        <div class="hero-poster-info">Sci-fi • 2 óra 15 perc • 12+</div>
-                    </div>
-                    <div class="hero-poster-footer">
-                        <div class="hero-poster-times">
-                            <span class="time-pill">16:30</span>
-                            <span class="time-pill">18:45</span>
-                            <span class="time-pill">21:10</span>
-                        </div>
-                        <button class="hero-poster-cta">Jegyet veszek</button>
-                    </div>
-                </div>
-            </aside>
-        </section>
-
-        <section class="section">
-            <div class="section-header">
+        <aside class="hero-poster">
+            <div class="hero-poster-overlay"></div>
+            <div class="hero-poster-inner">
                 <div>
-                    <h2 class="section-title">Most játszott filmek</h2>
-                    <p class="section-subtitle">Válassz filmet és foglalj jegyet!</p>
+                    <div class="hero-poster-tag">Kiemelt premier</div>
+                    <div class="hero-poster-title">Galaktikus Küldetés</div>
+                    <div class="hero-poster-info">Sci-fi • 2 óra 15 perc • 12+</div>
                 </div>
-                <a href="#" class="section-subtitle">Összes film megtekintése →</a>
-            </div>
-
-            <div class="carousel-wrapper">
-                <button class="carousel-btn carousel-btn-prev disabled" id="prevBtn">&#8249;</button>
-                <button class="carousel-btn carousel-btn-next" id="nextBtn">&#8250;</button>
-
-                <div class="carousel-track-outer">
-                    <div class="carousel-track" id="carouselTrack">
-
-                        <article class="movie-card">
-                            <div class="movie-poster"><img src="képek/Galaktikus_küldetés.png" alt="Galaktikus Küldetés" onerror="this.style.display='none'"></div>
-                            <div class="movie-content">
-                                <h3 class="movie-title">Galaktikus Küldetés</h3>
-                                <p class="movie-meta">Sci-fi • 2 ó 15 p • 12+</p>
-                                <div class="movie-tags"><span class="movie-tag">2D</span><span class="movie-tag">3D</span><span class="movie-tag">IMAX</span></div>
-                                <div class="movie-footer"><span>16:30, 18:45, 21:10</span><button class="movie-cta">Foglalás</button></div>
-                            </div>
-                        </article>
-
-                        <article class="movie-card">
-                            <div class="movie-poster"><img src="képek/éjszaka a város velett.png" alt="Éjszaka a Város Felett" onerror="this.style.display='none'"></div>
-                            <div class="movie-content">
-                                <h3 class="movie-title">Éjszaka a Város Felett</h3>
-                                <p class="movie-meta">Thriller • 1 ó 48 p • 16+</p>
-                                <div class="movie-tags"><span class="movie-tag">2D</span><span class="movie-tag">Feliratos</span></div>
-                                <div class="movie-footer"><span>17:00, 19:30</span><button class="movie-cta">Foglalás</button></div>
-                            </div>
-                        </article>
-
-                        <article class="movie-card">
-                            <div class="movie-poster"><img src="képek/családi_kalandpark.png" alt="Családi Kalandpark" onerror="this.style.display='none'"></div>
-                            <div class="movie-content">
-                                <h3 class="movie-title">Családi Kalandpark</h3>
-                                <p class="movie-meta">Családi • 1 ó 35 p • 6+</p>
-                                <div class="movie-tags"><span class="movie-tag">Szinkronos</span><span class="movie-tag">3D</span></div>
-                                <div class="movie-footer"><span>14:00, 16:15</span><button class="movie-cta">Foglalás</button></div>
-                            </div>
-                        </article>
-
-                        <article class="movie-card">
-                            <div class="movie-poster"><img src="képek/utolsó_esély.png" alt="Utolsó Esély" onerror="this.style.display='none'"></div>
-                            <div class="movie-content">
-                                <h3 class="movie-title">Utolsó Esély</h3>
-                                <p class="movie-meta">Akció • 2 ó 5 p • 16+</p>
-                                <div class="movie-tags"><span class="movie-tag">2D</span><span class="movie-tag">Eredeti</span></div>
-                                <div class="movie-footer"><span>20:00, 22:30</span><button class="movie-cta">Foglalás</button></div>
-                            </div>
-                        </article>
-
-                        <article class="movie-card">
-                            <div class="movie-poster" style="background:linear-gradient(145deg,#1a3a5c,#0d2137)"></div>
-                            <div class="movie-content">
-                                <h3 class="movie-title">Mélységek Titka</h3>
-                                <p class="movie-meta">Dráma • 1 ó 52 p • 12+</p>
-                                <div class="movie-tags"><span class="movie-tag">2D</span><span class="movie-tag">Feliratos</span></div>
-                                <div class="movie-footer"><span>15:00, 17:30</span><button class="movie-cta">Foglalás</button></div>
-                            </div>
-                        </article>
-
-                        <article class="movie-card">
-                            <div class="movie-poster" style="background:linear-gradient(145deg,#3a1a1a,#200d0d)"></div>
-                            <div class="movie-content">
-                                <h3 class="movie-title">Vérhold</h3>
-                                <p class="movie-meta">Horror • 1 ó 45 p • 18+</p>
-                                <div class="movie-tags"><span class="movie-tag">2D</span><span class="movie-tag">Eredeti</span></div>
-                                <div class="movie-footer"><span>21:00, 23:00</span><button class="movie-cta">Foglalás</button></div>
-                            </div>
-                        </article>
-
-                        <article class="movie-card">
-                            <div class="movie-poster" style="background:linear-gradient(145deg,#1a3a1a,#0d2010)"></div>
-                            <div class="movie-content">
-                                <h3 class="movie-title">Az Erdő Szelleme</h3>
-                                <p class="movie-meta">Animáció • 1 ó 28 p • 6+</p>
-                                <div class="movie-tags"><span class="movie-tag">3D</span><span class="movie-tag">Szinkronos</span></div>
-                                <div class="movie-footer"><span>10:00, 12:30, 15:00</span><button class="movie-cta">Foglalás</button></div>
-                            </div>
-                        </article>
-
-                        <article class="movie-card">
-                            <div class="movie-poster" style="background:linear-gradient(145deg,#3a2a1a,#201508)"></div>
-                            <div class="movie-content">
-                                <h3 class="movie-title">Sivatagi Vihar</h3>
-                                <p class="movie-meta">Western • 2 ó 10 p • 16+</p>
-                                <div class="movie-tags"><span class="movie-tag">2D</span><span class="movie-tag">Feliratos</span></div>
-                                <div class="movie-footer"><span>16:00, 18:30</span><button class="movie-cta">Foglalás</button></div>
-                            </div>
-                        </article>
-
-                        <article class="movie-card">
-                            <div class="movie-poster" style="background:linear-gradient(145deg,#2a1a3a,#150d20)"></div>
-                            <div class="movie-content">
-                                <h3 class="movie-title">Kvantumcsapda</h3>
-                                <p class="movie-meta">Sci-fi • 2 ó 20 p • 12+</p>
-                                <div class="movie-tags"><span class="movie-tag">IMAX</span><span class="movie-tag">3D</span></div>
-                                <div class="movie-footer"><span>17:00, 20:00</span><button class="movie-cta">Foglalás</button></div>
-                            </div>
-                        </article>
-
-                        <article class="movie-card">
-                            <div class="movie-poster" style="background:linear-gradient(145deg,#1a2a3a,#0d1520)"></div>
-                            <div class="movie-content">
-                                <h3 class="movie-title">Jeges Szívek</h3>
-                                <p class="movie-meta">Romantikus • 1 ó 55 p • 12+</p>
-                                <div class="movie-tags"><span class="movie-tag">2D</span><span class="movie-tag">Szinkronos</span></div>
-                                <div class="movie-footer"><span>14:30, 17:00</span><button class="movie-cta">Foglalás</button></div>
-                            </div>
-                        </article>
-
-                        <article class="movie-card">
-                            <div class="movie-poster" style="background:linear-gradient(145deg,#3a3a1a,#202008)"></div>
-                            <div class="movie-content">
-                                <h3 class="movie-title">Arany Kalitka</h3>
-                                <p class="movie-meta">Dráma • 2 ó 5 p • 16+</p>
-                                <div class="movie-tags"><span class="movie-tag">2D</span><span class="movie-tag">Eredeti</span></div>
-                                <div class="movie-footer"><span>18:00, 20:30</span><button class="movie-cta">Foglalás</button></div>
-                            </div>
-                        </article>
-
-                        <article class="movie-card">
-                            <div class="movie-poster" style="background:linear-gradient(145deg,#1a1a3a,#0d0d20)"></div>
-                            <div class="movie-content">
-                                <h3 class="movie-title">Csillagközi Nomád</h3>
-                                <p class="movie-meta">Sci-fi • 2 ó 30 p • 12+</p>
-                                <div class="movie-tags"><span class="movie-tag">IMAX</span><span class="movie-tag">4DX</span></div>
-                                <div class="movie-footer"><span>19:00, 22:00</span><button class="movie-cta">Foglalás</button></div>
-                            </div>
-                        </article>
-
-                        <article class="movie-card">
-                            <div class="movie-poster" style="background:linear-gradient(145deg,#3a1a2a,#200d15)"></div>
-                            <div class="movie-content">
-                                <h3 class="movie-title">Bíbor Maszk</h3>
-                                <p class="movie-meta">Akció • 1 ó 58 p • 16+</p>
-                                <div class="movie-tags"><span class="movie-tag">2D</span><span class="movie-tag">3D</span></div>
-                                <div class="movie-footer"><span>15:30, 18:00, 20:30</span><button class="movie-cta">Foglalás</button></div>
-                            </div>
-                        </article>
-
-                        <article class="movie-card">
-                            <div class="movie-poster" style="background:linear-gradient(145deg,#1a3a3a,#0d2020)"></div>
-                            <div class="movie-content">
-                                <h3 class="movie-title">Óceán Hangjai</h3>
-                                <p class="movie-meta">Dokumentum • 1 ó 40 p • 6+</p>
-                                <div class="movie-tags"><span class="movie-tag">2D</span><span class="movie-tag">Feliratos</span></div>
-                                <div class="movie-footer"><span>11:00, 13:30</span><button class="movie-cta">Foglalás</button></div>
-                            </div>
-                        </article>
-
+                <div class="hero-poster-footer">
+                    <div class="hero-poster-times">
+                        <span class="time-pill">16:30</span>
+                        <span class="time-pill">18:45</span>
+                        <span class="time-pill">21:10</span>
                     </div>
+                    <button class="hero-poster-cta">Jegyet veszek</button>
                 </div>
-
-                <div class="carousel-dots" id="carouselDots"></div>
             </div>
-        </section>
-    </main>
+        </aside>
+    </section>
 
-    <footer class="footer">
-        © 2025 Mozifoglaló – Műsoron
-    </footer>
+    <div class="day-bar" id="dayBar"></div>
+    <div class="film-lista" id="filmLista"></div>
+</main>
 
-    <script src="auth.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // ── Carousel logika ───────────────────────────────────────
-        // ── Carousel logika ───────────────────────────────────────
-const track      = document.getElementById("carouselTrack");
-const prevBtn    = document.getElementById("prevBtn");
-const nextBtn    = document.getElementById("nextBtn");
-const dotsEl     = document.getElementById("carouselDots");
+<footer class="footer">© 2025 Mozifoglaló – Műsoron</footer>
 
-const TOTAL      = 14;
-const STEP       = 3;
-let visibleCount = 4;
-let current      = 0;
+<script src="auth.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const FILMEK = [
+    { id:1,  cim:"Galaktikus Küldetés",     mufaj:"Sci-fi",      ido:"2ó 15p", kor:"12+", kep:"képek/Galaktikus_küldetés.png",
+      vetitesek:{ "2D":["13:00","16:30","21:10"], "3D":["18:45"], "IMAX":["15:00","20:00"] } },
+    { id:2,  cim:"Éjszaka a Város Felett",  mufaj:"Thriller",    ido:"1ó 48p", kor:"16+", kep:"képek/éjszaka a város velett.png",
+      vetitesek:{ "2D":["17:00","22:00"], "Feliratos":["19:30"] } },
+    { id:3,  cim:"Családi Kalandpark",      mufaj:"Családi",     ido:"1ó 35p", kor:"6+",  kep:"képek/családi_kalandpark.png",
+      vetitesek:{ "3D":["10:00","14:00"], "Szinkronos":["12:00","16:15"] } },
+    { id:4,  cim:"Utolsó Esély",            mufaj:"Akció",       ido:"2ó 5p",  kor:"16+", kep:"képek/utolsó_esély.png",
+      vetitesek:{ "2D":["20:00","22:30"], "Eredeti nyelv":["18:00"] } },
+    { id:5,  cim:"Mélységek Titka",         mufaj:"Dráma",       ido:"1ó 52p", kor:"12+", kep:"képek/Mélységek Titka.png",
+      vetitesek:{ "2D":["15:00","17:30"], "Feliratos":["20:00"] } },
+    { id:6,  cim:"Vérhold",                 mufaj:"Horror",      ido:"1ó 45p", kor:"18+", kep:"képek/Vérhold.png",
+      vetitesek:{ "2D":["21:00","23:00"] } },
+    { id:7,  cim:"Az Erdő Szelleme",        mufaj:"Animáció",    ido:"1ó 28p", kor:"6+",  kep:"képek/Az Erdő Szelleme.png",
+      vetitesek:{ "3D":["10:00","12:30"], "Szinkronos":["15:00"] } },
+    { id:8,  cim:"Sivatagi Vihar",          mufaj:"Western",     ido:"2ó 10p", kor:"16+", kep:"képek/Sivatagi Vihar.png",
+      vetitesek:{ "2D":["16:00","18:30"], "Feliratos":["21:00"] } },
+    { id:9,  cim:"Kvantumcsapda",           mufaj:"Sci-fi",      ido:"2ó 20p", kor:"12+", kep:"képek/Kvantumcsapda.png",
+      vetitesek:{ "IMAX":["17:00","20:30"], "3D":["14:30"] } },
+    { id:10, cim:"Jeges Szívek",            mufaj:"Romantikus",  ido:"1ó 55p", kor:"12+", kep:"képek/Jeges Szívek.png",
+      vetitesek:{ "2D":["14:30","17:00"], "Szinkronos":["19:30"] } },
+    { id:11, cim:"Arany Kalitka",           mufaj:"Dráma",       ido:"2ó 5p",  kor:"16+", kep:"képek/Arany Kalitka.png",
+      vetitesek:{ "2D":["18:00","20:30"], "Feliratos":["16:00"] } },
+    { id:12, cim:"Csillagközi Nomád",       mufaj:"Sci-fi",      ido:"2ó 30p", kor:"12+", kep:"képek/Csillagközi Nomád.png",
+      vetitesek:{ "IMAX":["19:00","22:00"], "4DX":["17:00"] } },
+    { id:13, cim:"Bíbor Maszk",             mufaj:"Akció",       ido:"1ó 58p", kor:"16+", kep:"képek/Bíbor Maszk.png",
+      vetitesek:{ "2D":["15:30","20:30"], "3D":["18:00"] } },
+    { id:14, cim:"Óceán Hangjai",           mufaj:"Dokumentum",  ido:"1ó 40p", kor:"6+",  kep:"képek/Óceán Hangjai.png",
+      vetitesek:{ "2D":["11:00","13:30"], "Feliratos":["16:00"] } },
+];
 
-function getVisible() {
-    if (window.innerWidth <= 480) return 1;
-    if (window.innerWidth <= 900) return 2;
-    return 4;
-}
+const NAPOK   = ["V","H","K","Sze","Cs","P","Szo"];
+const HONAPOK = ["jan","feb","már","ápr","máj","jún","júl","aug","szep","okt","nov","dec"];
 
-function totalPages() {
-    return Math.ceil(TOTAL / STEP);
-}
-
-function buildDots() {
-    dotsEl.innerHTML = "";
-    for (let i = 0; i < totalPages(); i++) {
-        const d = document.createElement("div");
-        d.className = "carousel-dot" + (i === current ? " active" : "");
-        d.addEventListener("click", () => goTo(i));
-        dotsEl.appendChild(d);
+function buildDayBar() {
+    const bar = document.getElementById("dayBar");
+    const ma  = new Date();
+    for (let i = 0; i < 7; i++) {
+        const d   = new Date(ma);
+        d.setDate(ma.getDate() + i);
+        const btn = document.createElement("button");
+        btn.className = "day-btn" + (i === 0 ? " active" : "");
+        btn.innerHTML = `
+            <span class="day-name">${i === 0 ? "Ma" : NAPOK[d.getDay()]}</span>
+            <span class="day-num">${d.getDate()}</span>
+            <span class="day-month">${HONAPOK[d.getMonth()]}</span>
+        `;
+        btn.addEventListener("click", () => {
+            document.querySelectorAll(".day-btn").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            renderFilmek();
+        });
+        bar.appendChild(btn);
     }
 }
 
-function goTo(page) {
-    current = Math.max(0, Math.min(page, totalPages() - 1));
+function renderFilmek() {
+    const lista = document.getElementById("filmLista");
+    lista.innerHTML = "";
+    FILMEK.forEach(film => {
+        const sor = document.createElement("div");
+        sor.className = "film-sor";
 
-    const firstCard = track.children[0];
-    const cardWidth = firstCard.getBoundingClientRect().width;
-    const gap = parseFloat(getComputedStyle(track).gap) || 17.6;
+        const plakat = document.createElement("div");
+        plakat.className = "film-plakat";
+        if (film.kep) {
+            const img = document.createElement("img");
+            img.src   = film.kep;
+            img.alt   = film.cim;
+            img.onerror = () => { plakat.innerHTML = `<div class="film-plakat-placeholder">🎬</div>`; };
+            plakat.appendChild(img);
+        } else {
+            plakat.innerHTML = `<div class="film-plakat-placeholder">🎬</div>`;
+        }
+        sor.appendChild(plakat);
 
-    track.style.transform = `translateX(-${current * STEP * (cardWidth + gap)}px)`;
+        const tagsHtml = Object.keys(film.vetitesek).map(f =>
+            `<span class="film-tag${f==='IMAX'?' imax':f==='4DX'?' x4d':''}">${f}</span>`
+        ).join("");
 
-    prevBtn.classList.toggle("disabled", current === 0);
-    nextBtn.classList.toggle("disabled", current >= totalPages() - 1);
+        const vetitesekHtml = Object.entries(film.vetitesek).map(([fmt, idok]) => `
+            <div class="vetites-blokk">
+                <div class="vetites-formatum">${fmt}</div>
+                <div class="idopont-gombok">
+                    ${idok.map(t =>
+                        `<a href="foglalas.html?film=${film.id}&ido=${t}&formatum=${encodeURIComponent(fmt)}"
+                            class="idopont-gomb${fmt==='IMAX'?' imax-gomb':''}">${t}</a>`
+                    ).join("")}
+                </div>
+            </div>
+        `).join("");
 
-    document.querySelectorAll(".carousel-dot").forEach((d, i) => {
-        d.classList.toggle("active", i === current);
+        const info = document.createElement("div");
+        info.className = "film-info";
+        info.innerHTML = `
+            <div class="film-fejlec">
+                <div>
+                    <div class="film-cim">${film.cim}</div>
+                    <div class="film-meta-sor">
+                        <span>${film.mufaj}</span>
+                        <span class="dot"></span>
+                        <span>${film.ido}</span>
+                        <span class="dot"></span>
+                        <span style="display:flex;gap:0.3rem;flex-wrap:wrap;">${tagsHtml}</span>
+                    </div>
+                </div>
+                <span class="kor-badge">${film.kor}</span>
+            </div>
+            <div class="vetites-blokkok">${vetitesekHtml}</div>
+        `;
+        sor.appendChild(info);
+        lista.appendChild(sor);
     });
 }
 
-function init() {
-    visibleCount = getVisible();
-    current = 0;
-    track.style.transform = "translateX(0)";
-    buildDots();
-    prevBtn.classList.add("disabled");
-    nextBtn.classList.toggle("disabled", totalPages() <= 1);
-}
-
-prevBtn.addEventListener("click", () => goTo(current - 1));
-nextBtn.addEventListener("click", () => goTo(current + 1));
-window.addEventListener("resize", init);
-init();
-    </script>
+buildDayBar();
+renderFilmek();
+</script>
 </body>
 </html>
