@@ -28,8 +28,8 @@ Webalapú mozijegy-foglaló alkalmazás, amellyel filmeket lehet böngészni, he
 Töltsd le vagy klónozd a projektet:
 
 ```bash
-git clone https://github.com/felhasznalonev/mozifoglalo.git
-cd mozifoglalo
+git clone https://github.com/DurugyAdam/webes-projektfeladat.git
+cd webes-projektfeladat
 ```
 
 ### 2. lépés – Backend függőségek telepítése
