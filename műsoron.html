@@ -6,157 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>MoziFoglaló – Műsoron</title>
     <link rel="stylesheet" href="main_page.css">
-    <style>
-        .day-bar {
-            max-width: 1200px;
-            margin: 1.5rem auto 0;
-            padding: 0 1.5rem;
-            display: flex;
-            gap: 0.5rem;
-            overflow-x: auto;
-            scrollbar-width: none;
-        }
-        .day-bar::-webkit-scrollbar { display: none; }
-
-        .day-btn {
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 0.6rem 1.1rem;
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.1);
-            background: transparent;
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: all 0.15s;
-            min-width: 64px;
-        }
-        .day-btn:hover { border-color: rgba(247,147,30,0.4); color: #fff; }
-        .day-btn.active {
-            background: linear-gradient(135deg, #f7931e, #ffb347);
-            border-color: transparent;
-            color: #1b1305;
-        }
-        .day-btn .day-name { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
-        .day-btn .day-num  { font-size: 1.1rem; font-weight: 700; line-height: 1.2; }
-        .day-btn .day-month{ font-size: 0.65rem; opacity: 0.75; }
-
-        .film-lista {
-            max-width: 1200px;
-            margin: 1.5rem auto 3rem;
-            padding: 0 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .film-sor {
-            background: radial-gradient(circle at top left, #1b2238, #101628 60%);
-            border: 1px solid rgba(255,255,255,0.07);
-            border-radius: 14px;
-            display: flex;
-            overflow: hidden;
-            transition: border-color 0.2s;
-        }
-        .film-sor:hover { border-color: rgba(247,147,30,0.25); }
-
-        .film-plakat {
-            width: 90px;
-            flex-shrink: 0;
-            background: linear-gradient(145deg, #f7931e, #ff6f00);
-            overflow: hidden;
-        }
-        .film-plakat img {
-            width: 100%; height: 100%;
-            object-fit: cover; object-position: center top;
-            display: block;
-        }
-        .film-plakat-placeholder {
-            width: 100%; height: 100%; min-height: 130px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 2rem; opacity: 0.35;
-        }
-
-        .film-info {
-            flex: 1;
-            padding: 1rem 1.2rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.55rem;
-            min-width: 0;
-        }
-        .film-fejlec {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-        .film-cim { font-size: 1rem; font-weight: 700; color: #fff; line-height: 1.2; }
-        .film-meta-sor {
-            display: flex; flex-wrap: wrap; gap: 0.4rem;
-            align-items: center; font-size: 0.75rem; color: var(--text-muted);
-        }
-        .film-meta-sor .dot { width: 3px; height: 3px; border-radius: 50%; background: rgba(255,255,255,0.25); }
-        .film-tag {
-            font-size: 0.65rem; padding: 0.15rem 0.5rem;
-            border-radius: 999px;
-            background: rgba(0,0,0,0.4);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: var(--text-muted);
-        }
-        .film-tag.imax { border-color: rgba(247,147,30,0.4); color: #f7931e; }
-        .film-tag.x4d  { border-color: rgba(100,200,255,0.4); color: #64c8ff; }
-
-        .kor-badge {
-            flex-shrink: 0;
-            padding: 0.2rem 0.5rem;
-            border-radius: 6px;
-            border: 1px solid rgba(255,255,255,0.15);
-            font-size: 0.7rem; font-weight: 700;
-            color: var(--text-muted);
-            align-self: flex-start;
-        }
-
-        .vetites-blokkok { display: flex; flex-wrap: wrap; gap: 0.75rem; }
-        .vetites-blokk   { display: flex; flex-direction: column; gap: 0.3rem; }
-        .vetites-formatum {
-            font-size: 0.65rem; text-transform: uppercase;
-            letter-spacing: 0.1em; color: var(--text-muted); font-weight: 600;
-        }
-        .idopont-gombok { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-        .idopont-gomb {
-            padding: 0.35rem 0.75rem;
-            border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.15);
-            background: rgba(255,255,255,0.05);
-            color: #fff; font-size: 0.82rem; font-weight: 600;
-            cursor: pointer; transition: all 0.15s; text-decoration: none;
-            display: inline-block;
-        }
-        .idopont-gomb:hover {
-            background: rgba(247,147,30,0.15);
-            border-color: #f7931e; color: #f7931e;
-        }
-        .idopont-gomb.imax-gomb { border-color: rgba(247,147,30,0.3); color: #ffb347; }
-        .idopont-gomb.imax-gomb:hover { background: rgba(247,147,30,0.2); }
-
-        @media (max-width: 600px) {
-            .film-plakat { width: 70px; }
-            .film-info   { padding: 0.75rem 0.9rem; }
-            .film-cim    { font-size: 0.9rem; }
-        }
-    </style>
+    <link rel="stylesheet" href="musoron.css">
 </head>
 <body>
 
 <header class="navbar">
     <div class="navbar-inner">
-        <div class="logo">
-            <div class="logo-mark"></div>
-            <span>MOZIFoglaló</span>
-        </div>
+        <div class="logo"><div class="logo-mark"></div><span>MOZIFoglaló</span></div>
         <nav class="nav-links">
             <a href="#" class="nav-link">MŰSORON</a>
             <a href="ajanlatok.html" class="nav-link">AJÁNLATOK</a>
@@ -176,7 +32,7 @@
             <h1 class="hero-title">Foglalj <span>jegyet</span> kedvenc filmedre.</h1>
             <p class="hero-subtitle">Válaszd ki a napot, a filmet és az időpontot – a jegyed máris a tiéd.</p>
             <div class="hero-meta">
-                <span><span class="hero-meta-dot"></span> Budapest, Debrecen, Győr és még több város</span>
+                <span><span class="hero-meta-dot"></span> Budapest, Debrecen, Győr és több város</span>
                 <span><span class="hero-meta-dot"></span> 2D, 3D, IMAX, 4DX</span>
             </div>
         </div>
@@ -206,126 +62,8 @@
 
 <footer class="footer">© 2025 Mozifoglaló – Műsoron</footer>
 
-<script src="auth.js" defer></script>
+<script src="auth.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-const FILMEK = [
-    { id:1,  cim:"Galaktikus Küldetés",     mufaj:"Sci-fi",      ido:"2ó 15p", kor:"12+", kep:"képek/Galaktikus_küldetés.png",
-      vetitesek:{ "2D":["13:00","16:30","21:10"], "3D":["18:45"], "IMAX":["15:00","20:00"] } },
-    { id:2,  cim:"Éjszaka a Város Felett",  mufaj:"Thriller",    ido:"1ó 48p", kor:"16+", kep:"képek/éjszaka a város velett.png",
-      vetitesek:{ "2D":["17:00","22:00"], "Feliratos":["19:30"] } },
-    { id:3,  cim:"Családi Kalandpark",      mufaj:"Családi",     ido:"1ó 35p", kor:"6+",  kep:"képek/családi_kalandpark.png",
-      vetitesek:{ "3D":["10:00","14:00"], "Szinkronos":["12:00","16:15"] } },
-    { id:4,  cim:"Utolsó Esély",            mufaj:"Akció",       ido:"2ó 5p",  kor:"16+", kep:"képek/utolsó_esély.png",
-      vetitesek:{ "2D":["20:00","22:30"], "Eredeti nyelv":["18:00"] } },
-    { id:5,  cim:"Mélységek Titka",         mufaj:"Dráma",       ido:"1ó 52p", kor:"12+", kep:"képek/Mélységek Titka.png",
-      vetitesek:{ "2D":["15:00","17:30"], "Feliratos":["20:00"] } },
-    { id:6,  cim:"Vérhold",                 mufaj:"Horror",      ido:"1ó 45p", kor:"18+", kep:"képek/Vérhold.png",
-      vetitesek:{ "2D":["21:00","23:00"] } },
-    { id:7,  cim:"Az Erdő Szelleme",        mufaj:"Animáció",    ido:"1ó 28p", kor:"6+",  kep:"képek/Az Erdő Szelleme.png",
-      vetitesek:{ "3D":["10:00","12:30"], "Szinkronos":["15:00"] } },
-    { id:8,  cim:"Sivatagi Vihar",          mufaj:"Western",     ido:"2ó 10p", kor:"16+", kep:"képek/Sivatagi Vihar.png",
-      vetitesek:{ "2D":["16:00","18:30"], "Feliratos":["21:00"] } },
-    { id:9,  cim:"Kvantumcsapda",           mufaj:"Sci-fi",      ido:"2ó 20p", kor:"12+", kep:"képek/Kvantumcsapda.png",
-      vetitesek:{ "IMAX":["17:00","20:30"], "3D":["14:30"] } },
-    { id:10, cim:"Jeges Szívek",            mufaj:"Romantikus",  ido:"1ó 55p", kor:"12+", kep:"képek/Jeges Szívek.png",
-      vetitesek:{ "2D":["14:30","17:00"], "Szinkronos":["19:30"] } },
-    { id:11, cim:"Arany Kalitka",           mufaj:"Dráma",       ido:"2ó 5p",  kor:"16+", kep:"képek/Arany Kalitka.png",
-      vetitesek:{ "2D":["18:00","20:30"], "Feliratos":["16:00"] } },
-    { id:12, cim:"Csillagközi Nomád",       mufaj:"Sci-fi",      ido:"2ó 30p", kor:"12+", kep:"képek/Csillagközi Nomád.png",
-      vetitesek:{ "IMAX":["19:00","22:00"], "4DX":["17:00"] } },
-    { id:13, cim:"Bíbor Maszk",             mufaj:"Akció",       ido:"1ó 58p", kor:"16+", kep:"képek/Bíbor Maszk.png",
-      vetitesek:{ "2D":["15:30","20:30"], "3D":["18:00"] } },
-    { id:14, cim:"Óceán Hangjai",           mufaj:"Dokumentum",  ido:"1ó 40p", kor:"6+",  kep:"képek/Óceán Hangjai.png",
-      vetitesek:{ "2D":["11:00","13:30"], "Feliratos":["16:00"] } },
-];
-
-const NAPOK   = ["V","H","K","Sze","Cs","P","Szo"];
-const HONAPOK = ["jan","feb","már","ápr","máj","jún","júl","aug","szep","okt","nov","dec"];
-
-function buildDayBar() {
-    const bar = document.getElementById("dayBar");
-    const ma  = new Date();
-    for (let i = 0; i < 7; i++) {
-        const d   = new Date(ma);
-        d.setDate(ma.getDate() + i);
-        const btn = document.createElement("button");
-        btn.className = "day-btn" + (i === 0 ? " active" : "");
-        btn.innerHTML = `
-            <span class="day-name">${i === 0 ? "Ma" : NAPOK[d.getDay()]}</span>
-            <span class="day-num">${d.getDate()}</span>
-            <span class="day-month">${HONAPOK[d.getMonth()]}</span>
-        `;
-        btn.addEventListener("click", () => {
-            document.querySelectorAll(".day-btn").forEach(b => b.classList.remove("active"));
-            btn.classList.add("active");
-            renderFilmek();
-        });
-        bar.appendChild(btn);
-    }
-}
-
-function renderFilmek() {
-    const lista = document.getElementById("filmLista");
-    lista.innerHTML = "";
-    FILMEK.forEach(film => {
-        const sor = document.createElement("div");
-        sor.className = "film-sor";
-
-        const plakat = document.createElement("div");
-        plakat.className = "film-plakat";
-        if (film.kep) {
-            const img = document.createElement("img");
-            img.src   = film.kep;
-            img.alt   = film.cim;
-            img.onerror = () => { plakat.innerHTML = `<div class="film-plakat-placeholder">🎬</div>`; };
-            plakat.appendChild(img);
-        } else {
-            plakat.innerHTML = `<div class="film-plakat-placeholder">🎬</div>`;
-        }
-        sor.appendChild(plakat);
-
-        const tagsHtml = Object.keys(film.vetitesek).map(f =>
-            `<span class="film-tag${f==='IMAX'?' imax':f==='4DX'?' x4d':''}">${f}</span>`
-        ).join("");
-
-        const vetitesekHtml = Object.entries(film.vetitesek).map(([fmt, idok]) => `
-            <div class="vetites-blokk">
-                <div class="vetites-formatum">${fmt}</div>
-                <div class="idopont-gombok">
-                    ${idok.map(t =>
-                        `<a href="foglalas.html?film=${film.id}&ido=${t}&formatum=${encodeURIComponent(fmt)}"
-                            class="idopont-gomb${fmt==='IMAX'?' imax-gomb':''}">${t}</a>`
-                    ).join("")}
-                </div>
-            </div>
-        `).join("");
-
-        const info = document.createElement("div");
-        info.className = "film-info";
-        info.innerHTML = `
-            <div class="film-fejlec">
-                <div>
-                    <div class="film-cim">${film.cim}</div>
-                    <div class="film-meta-sor">
-                        <span>${film.mufaj}</span>
-                        <span class="dot"></span>
-                        <span>${film.ido}</span>
-                        <span class="dot"></span>
-                        <span style="display:flex;gap:0.3rem;flex-wrap:wrap;">${tagsHtml}</span>
-                    </div>
-                </div>
-                <span class="kor-badge">${film.kor}</span>
-            </div>
-            <div class="vetites-blokkok">${vetitesekHtml}</div>
-        `;
-        sor.appendChild(info);
-        lista.appendChild(sor);
-    });
-}
-
-buildDayBar();
-renderFilmek();
-</script>
+<script src="musoron.js"></script>
 </body>
 </html>

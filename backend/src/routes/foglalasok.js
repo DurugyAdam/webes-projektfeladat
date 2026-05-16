@@ -2,88 +2,152 @@
 const express = require("express");
 const { body, param, validationResult } = require("express-validator");
 const { getDb } = require("../db/connection");
-const { authMiddleware } = require("../middleware/auth");
+const { authMiddleware, adminMiddleware } = require("../middleware/auth");
 
 const router = express.Router();
 
-// GET /foglalasok – bejelentkezett felhasználó saját foglalásai
-router.get("/", authMiddleware, (req, res) => {
-  const db = getDb();
-  const foglalasok = db
-    .prepare(`
-      SELECT fog.id, fog.szekek, fog.allapot, fog.letrehozva,
-             v.kezdes, v.terem, v.formatum,
-             f.cim AS film_cim, f.mufaj
-      FROM foglalasok fog
-      JOIN vetitesek v ON fog.vetites_id = v.id
-      JOIN filmek f ON v.film_id = f.id
-      WHERE fog.felhasznalo_id = ?
-      ORDER BY fog.letrehozva DESC
-    `)
-    .all(req.user.id);
+// GET /foglalasok/szekek
+router.get("/szekek", (req, res) => {
+    const { film_id, idopont, formatum } = req.query;
+    if (!film_id || !idopont || !formatum)
+        return res.status(400).json({ error: "Hiányzó paraméterek." });
 
-  const parsed = foglalasok.map(f => ({ ...f, szekek: JSON.parse(f.szekek) }));
-  res.json(parsed);
+    const db = getDb();
+    let sajatUserId = null;
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+        try {
+            const jwt = require("jsonwebtoken");
+            sajatUserId = jwt.verify(authHeader.slice(7), process.env.JWT_SECRET).id;
+        } catch {}
+    }
+
+    // Minden aktív foglalás – székenként külön sor
+    const foglalasok = db.prepare(`
+        SELECT felhasznalo_id, szekek, id FROM foglalasok
+        WHERE film_id=? AND idopont=? AND formatum=? AND allapot='aktiv'
+    `).all(film_id, idopont, formatum);
+
+    const foglalt = [];
+    const sajat = [];
+
+    foglalasok.forEach(f => {
+        const szekek = JSON.parse(f.szekek);
+        szekek.forEach(s => {
+            if (sajatUserId && f.felhasznalo_id === sajatUserId) {
+                sajat.push({ szek: s, foglalas_id: f.id });
+            } else {
+                foglalt.push(s);
+            }
+        });
+    });
+
+    const tiltott = db.prepare(`
+        SELECT szek_azonosito FROM tiltott_szekek
+        WHERE film_id=? AND idopont=? AND formatum=?
+    `).all(film_id, idopont, formatum).map(t => t.szek_azonosito);
+
+    res.json({ foglalt, tiltott, sajat });
 });
 
-// POST /foglalasok – új foglalás
-router.post(
-  "/",
-  authMiddleware,
-  [
-    body("vetites_id").isInt({ min: 1 }).withMessage("Érvényes vetites_id szükséges."),
-    body("szekek").isArray({ min: 1 }).withMessage("Legalább egy széket ki kell választani."),
-    body("szekek.*").isString().withMessage("A székek szöveges azonosítók legyenek."),
-  ],
-  (req, res) => {
+// GET /foglalasok
+router.get("/", authMiddleware, (req, res) => {
+    const db = getDb();
+    const foglalasok = db.prepare(
+        "SELECT * FROM foglalasok WHERE felhasznalo_id=? ORDER BY letrehozva DESC"
+    ).all(req.user.id);
+    res.json(foglalasok.map(f => ({ ...f, szekek: JSON.parse(f.szekek) })));
+});
+
+// POST /foglalasok – székenként külön sor az adatbázisban
+router.post("/", authMiddleware, [
+    body("vetites_id").isInt({ min: 1 }),
+    body("szekek").isArray({ min: 1 }),
+    body("film_id").isInt({ min: 1 }),
+    body("idopont").notEmpty(),
+    body("formatum").notEmpty(),
+], (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ hibak: errors.array() });
 
-    const { vetites_id, szekek } = req.body;
+    const { vetites_id, szekek, film_id, idopont, formatum } = req.body;
     const db = getDb();
 
-    const vetites = db
-      .prepare("SELECT * FROM vetitesek WHERE id = ? AND aktiv = 1")
-      .get(vetites_id);
-    if (!vetites) return res.status(404).json({ error: "A vetítés nem található." });
+    // Max 8 szék ellenőrzése
+    const sajatSzekSzam = db.prepare(`
+        SELECT COUNT(*) as cnt FROM foglalasok
+        WHERE film_id=? AND idopont=? AND formatum=? AND felhasznalo_id=? AND allapot='aktiv'
+    `).get(film_id, idopont, formatum, req.user.id).cnt;
 
-    const meglevoFoglalasok = db
-      .prepare("SELECT szekek FROM foglalasok WHERE vetites_id = ? AND allapot = 'aktiv'")
-      .all(vetites_id);
-    const foglaltSzekek = meglevoFoglalasok.flatMap(f => JSON.parse(f.szekek));
+    if (sajatSzekSzam + szekek.length > 8)
+        return res.status(400).json({ error: `Maximum 8 helyet foglalhatsz. Jelenleg ${sajatSzekSzam} helyed van.` });
+
+    // Foglalt székek ellenőrzése
+    const foglaltSzekek = db.prepare(`
+        SELECT szekek FROM foglalasok
+        WHERE film_id=? AND idopont=? AND formatum=? AND allapot='aktiv'
+    `).all(film_id, idopont, formatum).flatMap(f => JSON.parse(f.szekek));
+
     const utkozes = szekek.filter(s => foglaltSzekek.includes(s));
-    if (utkozes.length > 0) {
-      return res.status(409).json({ error: `A következő székek már foglaltak: ${utkozes.join(", ")}` });
-    }
+    if (utkozes.length > 0)
+        return res.status(409).json({ error: `Már foglalt székek: ${utkozes.join(", ")}` });
 
-    const result = db
-      .prepare("INSERT INTO foglalasok (felhasznalo_id, vetites_id, szekek) VALUES (?,?,?)")
-      .run(req.user.id, vetites_id, JSON.stringify(szekek));
+    // Tiltott székek ellenőrzése
+    const tiltottSzekek = db.prepare(`
+        SELECT szek_azonosito FROM tiltott_szekek
+        WHERE film_id=? AND idopont=? AND formatum=?
+    `).all(film_id, idopont, formatum).map(t => t.szek_azonosito);
 
-    res.status(201).json({
-      id: result.lastInsertRowid,
-      vetites_id,
-      szekek,
-      allapot: "aktiv",
+    const tiltottUtkozes = szekek.filter(s => tiltottSzekek.includes(s));
+    if (tiltottUtkozes.length > 0)
+        return res.status(409).json({ error: `Nem elérhető székek: ${tiltottUtkozes.join(", ")}` });
+
+    // Székenként külön sor beszúrása
+    const insert = db.prepare(`
+        INSERT INTO foglalasok (felhasznalo_id, vetites_id, film_id, idopont, formatum, szekek)
+        VALUES (?, ?, ?, ?, ?, ?)
+    `);
+
+    const ids = [];
+    const insertAll = db.transaction(() => {
+        szekek.forEach(szek => {
+            const result = insert.run(req.user.id, vetites_id, film_id, idopont, formatum, JSON.stringify([szek]));
+            ids.push(result.lastInsertRowid);
+        });
     });
-  }
-);
+    insertAll();
 
-// DELETE /foglalasok/:id – foglalás lemondása
+    res.status(201).json({ ids, szekek, allapot: "aktiv" });
+});
+
+// DELETE /foglalasok/:id – saját foglalás lemondása
 router.delete("/:id", authMiddleware, param("id").isInt(), (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(400).json({ hibak: errors.array() });
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ hibak: errors.array() });
 
-  const db = getDb();
-  const foglalas = db
-    .prepare("SELECT * FROM foglalasok WHERE id = ? AND felhasznalo_id = ?")
-    .get(req.params.id, req.user.id);
+    const db = getDb();
+    const foglalas = db.prepare(
+        "SELECT * FROM foglalasok WHERE id=? AND felhasznalo_id=?"
+    ).get(req.params.id, req.user.id);
 
-  if (!foglalas) return res.status(404).json({ error: "A foglalás nem található." });
-  if (foglalas.allapot === "lemondva") return res.status(400).json({ error: "Ez a foglalás már le lett mondva." });
+    if (!foglalas) return res.status(404).json({ error: "Foglalás nem található." });
+    if (foglalas.allapot === "lemondva") return res.status(400).json({ error: "Már le lett mondva." });
 
-  db.prepare("UPDATE foglalasok SET allapot = 'lemondva' WHERE id = ?").run(req.params.id);
-  res.json({ uzenet: "Foglalás sikeresen lemondva." });
+    db.prepare("UPDATE foglalasok SET allapot='lemondva' WHERE id=?").run(req.params.id);
+    res.json({ uzenet: "Foglalás lemondva." });
+});
+
+// DELETE /foglalasok/admin/:id – admin bármely foglalást lemondhat
+router.delete("/admin/:id", adminMiddleware, param("id").isInt(), (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ hibak: errors.array() });
+
+    const db = getDb();
+    const foglalas = db.prepare("SELECT * FROM foglalasok WHERE id=?").get(req.params.id);
+    if (!foglalas) return res.status(404).json({ error: "Foglalás nem található." });
+
+    db.prepare("UPDATE foglalasok SET allapot='lemondva' WHERE id=?").run(req.params.id);
+    res.json({ uzenet: "Foglalás lemondva (admin)." });
 });
 
 module.exports = router;
