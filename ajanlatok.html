@@ -134,7 +134,7 @@
             </div>
         </div>
         <div class="movie-card">
-            <div class="movie-poster"><img src="képek/családi menü.png" alt="Családi csomag" onerror="this.style.display='none'"></div>
+            <div class="movie-poster"><img src="képek/Családi csomag.png" alt="Családi csomag" onerror="this.style.display='none'"></div>
             <div class="movie-content">
                 <h3 class="movie-title">Családi csomag</h3>
                 <p class="movie-meta">4+ jegy esetén automatikus -15%</p>
@@ -159,7 +159,7 @@
                 <p class="movie-meta">2 jegy + popcorn + ital</p>
                 <div class="movie-price">-10%</div>
                 <p class="movie-meta" style="margin-top:0.4rem;font-size:0.7rem;">
-                    Kuponkód: <span class="kupon-kod">WELCOME10</span> – 2 felhasználás / fiók
+                    Kuponkód: <span class="kupon-kod">DATE</span> – 2 felhasználás / fiók
                 </p>
             </div>
         </div>
@@ -170,7 +170,7 @@
                 <p class="movie-meta">Prémium ülőhely + ajándék snack</p>
                 <div class="movie-price">-50%</div>
                 <p class="movie-meta" style="margin-top:0.4rem;font-size:0.7rem;">
-                    Kuponkód: <span class="kupon-kod">MOVIE50</span> – 2 felhasználás / fiók
+                    Kuponkód: <span class="kupon-kod">ROMANTIKUS</span> – 2 felhasználás / fiók (-25%)
                 </p>
             </div>
         </div>
@@ -217,9 +217,11 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 const KUPON_ADATOK = [
-    { kod: "WELCOME10", nev: "WELCOME10 (-10%)", limit: 2 },
-    { kod: "MOVIE50",   nev: "MOVIE50 (-50%)",   limit: 2 },
-    { kod: "DIAK",      nev: "DIAK (diák ár)",   limit: null },
+    { kod: "WELCOME10",  nev: "WELCOME10 (-10%)",  limit: 1 },
+    { kod: "MOVIE50",    nev: "MOVIE50 (-50%)",    limit: 1 },
+    { kod: "DATE",       nev: "DATE (-10%)",       limit: 2 },
+    { kod: "ROMANTIKUS", nev: "ROMANTIKUS (-25%)", limit: 2 },
+    { kod: "DIAK",       nev: "DIAK (diák ár)",    limit: null },
 ];
 
 function frissitKuponEgyenleg() {

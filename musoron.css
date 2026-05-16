@@ -125,7 +125,7 @@
 }
 .szek:hover:not(.foglalt):not(.tiltott) { background: rgba(247,147,30,0.2); border-color: #f7931e; }
 .szek.kivalasztott { background: linear-gradient(135deg,#f7931e,#ffb347); border-color: #f7931e; color: #1b1305; }
-.szek.foglalt { background: rgba(80,80,80,0.5); border-color: rgba(255,255,255,0.2); cursor: not-allowed; opacity: 0.7; }
+.szek.foglalt { background:#0b1020;border-color:rgba(255,255,255,0.08);cursor:not-allowed;opacity:1;color:rgba(255,255,255,0.08); }
 .szek.tiltott { background: rgba(255,80,80,0.15); border-color: rgba(255,80,80,0.35); cursor: not-allowed; opacity: 0.6; }
 
 .jelmagyard { display: flex; justify-content: center; gap: 1rem; margin-top: 0.75rem; font-size: 0.72rem; color: var(--text-muted); flex-wrap: wrap; }
@@ -133,7 +133,7 @@
 .jelmagyard-szek { width: 16px; height: 14px; border-radius: 3px 3px 2px 2px; border: 1px solid; }
 .jelmagyard-szek.szabad { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.15); }
 .jelmagyard-szek.kiv    { background: linear-gradient(135deg,#f7931e,#ffb347); border-color: #f7931e; }
-.jelmagyard-szek.fog    { background: rgba(80,80,80,0.5); border-color: rgba(255,255,255,0.2); }
+.jelmagyard-szek.fog { background:#0b1020;border-color:rgba(255,255,255,0.08); }
 .jelmagyard-szek.tilt   { background: rgba(255,80,80,0.15); border-color: rgba(255,80,80,0.35); }
 
 .osszesito { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 1rem 1rem; margin-top: 1rem; }

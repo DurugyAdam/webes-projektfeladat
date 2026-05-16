@@ -22,7 +22,6 @@ router.get("/szekek", (req, res) => {
         } catch {}
     }
 
-    // Minden aktív foglalás – székenként külön sor
     const foglalasok = db.prepare(`
         SELECT felhasznalo_id, szekek, id FROM foglalasok
         WHERE film_id=? AND idopont=? AND formatum=? AND allapot='aktiv'
@@ -59,9 +58,8 @@ router.get("/", authMiddleware, (req, res) => {
     res.json(foglalasok.map(f => ({ ...f, szekek: JSON.parse(f.szekek) })));
 });
 
-// POST /foglalasok – székenként külön sor az adatbázisban
+// POST /foglalasok
 router.post("/", authMiddleware, [
-    body("vetites_id").isInt({ min: 1 }),
     body("szekek").isArray({ min: 1 }),
     body("film_id").isInt({ min: 1 }),
     body("idopont").notEmpty(),
@@ -70,10 +68,10 @@ router.post("/", authMiddleware, [
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ hibak: errors.array() });
 
-    const { vetites_id, szekek, film_id, idopont, formatum } = req.body;
+    const { szekek, film_id, idopont, formatum } = req.body;
     const db = getDb();
 
-    // Max 8 szék ellenőrzése
+    // Max 8 szék
     const sajatSzekSzam = db.prepare(`
         SELECT COUNT(*) as cnt FROM foglalasok
         WHERE film_id=? AND idopont=? AND formatum=? AND felhasznalo_id=? AND allapot='aktiv'
@@ -82,7 +80,7 @@ router.post("/", authMiddleware, [
     if (sajatSzekSzam + szekek.length > 8)
         return res.status(400).json({ error: `Maximum 8 helyet foglalhatsz. Jelenleg ${sajatSzekSzam} helyed van.` });
 
-    // Foglalt székek ellenőrzése
+    // Foglalt székek
     const foglaltSzekek = db.prepare(`
         SELECT szekek FROM foglalasok
         WHERE film_id=? AND idopont=? AND formatum=? AND allapot='aktiv'
@@ -92,7 +90,7 @@ router.post("/", authMiddleware, [
     if (utkozes.length > 0)
         return res.status(409).json({ error: `Már foglalt székek: ${utkozes.join(", ")}` });
 
-    // Tiltott székek ellenőrzése
+    // Tiltott székek
     const tiltottSzekek = db.prepare(`
         SELECT szek_azonosito FROM tiltott_szekek
         WHERE film_id=? AND idopont=? AND formatum=?
@@ -102,20 +100,30 @@ router.post("/", authMiddleware, [
     if (tiltottUtkozes.length > 0)
         return res.status(409).json({ error: `Nem elérhető székek: ${tiltottUtkozes.join(", ")}` });
 
-    // Székenként külön sor beszúrása
+    // Vetítés ID keresése
+    const vetites = db.prepare(
+        "SELECT id FROM vetitesek WHERE film_id=? AND formatum=? AND aktiv=1"
+    ).get(film_id, formatum);
+    const vetites_id = vetites ? vetites.id : null;
+
+    // Székenként külön sor – foreign key kikapcsolva
+    db.pragma("foreign_keys = OFF");
     const insert = db.prepare(`
         INSERT INTO foglalasok (felhasznalo_id, vetites_id, film_id, idopont, formatum, szekek)
         VALUES (?, ?, ?, ?, ?, ?)
     `);
-
     const ids = [];
-    const insertAll = db.transaction(() => {
-        szekek.forEach(szek => {
-            const result = insert.run(req.user.id, vetites_id, film_id, idopont, formatum, JSON.stringify([szek]));
-            ids.push(result.lastInsertRowid);
+    try {
+        const insertAll = db.transaction(() => {
+            szekek.forEach(szek => {
+                const result = insert.run(req.user.id, vetites_id, film_id, idopont, formatum, JSON.stringify([szek]));
+                ids.push(result.lastInsertRowid);
+            });
         });
-    });
-    insertAll();
+        insertAll();
+    } finally {
+        db.pragma("foreign_keys = ON");
+    }
 
     res.status(201).json({ ids, szekek, allapot: "aktiv" });
 });
@@ -137,7 +145,7 @@ router.delete("/:id", authMiddleware, param("id").isInt(), (req, res) => {
     res.json({ uzenet: "Foglalás lemondva." });
 });
 
-// DELETE /foglalasok/admin/:id – admin bármely foglalást lemondhat
+// DELETE /foglalasok/admin/:id – admin lemondás
 router.delete("/admin/:id", adminMiddleware, param("id").isInt(), (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ hibak: errors.array() });

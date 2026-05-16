@@ -39,18 +39,7 @@ cd backend
 npm install
 ```
 
-### 3. lépés – Környezeti változók beállítása
-
-A `backend` mappában hozz létre egy `.env` fájlt:
-
-```
-PORT=3000
-JWT_SECRET=valtozd_meg_eles_kornyezetben_!
-NODE_ENV=development
-DB_PATH=./mozifoglalo.db
-```
-
-### 4. lépés – Backend szerver indítása
+### 3. lépés – Backend szerver indítása
 
 ```bash
 node src/app.js
@@ -58,7 +47,7 @@ node src/app.js
 
 A szerver elindul: `http://localhost:3000`
 
-### 5. lépés – Frontend megnyitása
+### 4. lépés – Frontend megnyitása
 
 Nyisd meg a `műsoron.html` fájlt egy **Live Server** segítségével:
 

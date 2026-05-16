@@ -1,55 +1,110 @@
 // musoron.js – Műsoron oldal teljes logikája
 
-const ALAP_ARAK = {
-    "2D": 3500, "3D": 4000, "IMAX": 5000, "4DX": 5500,
-    "Feliratos": 3500, "Szinkronos": 3500, "Eredeti nyelv": 3500
-};
+// Állapot
+let ALAP_ARAK = {};
+let KUPONOK = {};
+let FILMEK = [];
+let kivalasztottNap = new Date().toISOString().slice(0, 10);
+let modalKivalasztott = new Set();
+let modalKuponok = new Set();
 
-const KUPONOK = {
-    "DIAK":      { tipus: "fix",      ertek: 1800, nev: "Diák kedvezmény",     limit: null, csakKedd: false },
-    "WELCOME10": { tipus: "szazalek", ertek: 10,   nev: "10% Date Night",      limit: 2,    csakKedd: false },
-    "MOVIE50":   { tipus: "szazalek", ertek: 50,   nev: "50% Romantikus este", limit: 2,    csakKedd: false },
-    "KEDD20":    { tipus: "szazalek", ertek: 20,   nev: "Keddi mozinap -20%",  limit: null, csakKedd: true  },
-};
+// Szűrő állapot
+let szuroMufaj    = new Set();
+let szuroFormatum = new Set();
+let szuroNyelv    = new Set();
 
 const SORAZONOSITOK = ["A","B","C","D","E","F","G","H","I","J"];
 const NAPOK   = ["V","H","K","Sze","Cs","P","Szo"];
 const HONAPOK = ["jan","feb","már","ápr","máj","jún","júl","aug","szep","okt","nov","dec"];
 
-const FILMEK = [
-    { id:1,  cim:"Galaktikus Küldetés",    mufaj:"Sci-fi",      ido:"2ó 15p", kor:"12+", kep:"képek/Galaktikus_küldetés.png",    vetitesek:{ "2D":["13:00","16:30","21:10"],"3D":["18:45"],"IMAX":["15:00","20:00"] } },
-    { id:2,  cim:"Éjszaka a Város Felett", mufaj:"Thriller",    ido:"1ó 48p", kor:"16+", kep:"képek/éjszaka a város velett.png", vetitesek:{ "2D":["17:00","22:00"],"Feliratos":["19:30"] } },
-    { id:3,  cim:"Családi Kalandpark",     mufaj:"Családi",     ido:"1ó 35p", kor:"6+",  kep:"képek/családi_kalandpark.png",     vetitesek:{ "3D":["10:00","14:00"],"Szinkronos":["12:00","16:15"] } },
-    { id:4,  cim:"Utolsó Esély",           mufaj:"Akció",       ido:"2ó 5p",  kor:"16+", kep:"képek/utolsó_esély.png",           vetitesek:{ "2D":["20:00","22:30"],"Eredeti nyelv":["18:00"] } },
-    { id:5,  cim:"Mélységek Titka",        mufaj:"Dráma",       ido:"1ó 52p", kor:"12+", kep:"képek/Mélységek Titka.png",        vetitesek:{ "2D":["15:00","17:30"],"Feliratos":["20:00"] } },
-    { id:6,  cim:"Vérhold",               mufaj:"Horror",      ido:"1ó 45p", kor:"18+", kep:"képek/Vérhold.png",                vetitesek:{ "2D":["21:00","23:00"] } },
-    { id:7,  cim:"Az Erdő Szelleme",      mufaj:"Animáció",    ido:"1ó 28p", kor:"6+",  kep:"képek/Az Erdő Szelleme.png",       vetitesek:{ "3D":["10:00","12:30"],"Szinkronos":["15:00"] } },
-    { id:8,  cim:"Sivatagi Vihar",        mufaj:"Western",     ido:"2ó 10p", kor:"16+", kep:"képek/Sivatagi Vihar.png",         vetitesek:{ "2D":["16:00","18:30"],"Feliratos":["21:00"] } },
-    { id:9,  cim:"Kvantumcsapda",         mufaj:"Sci-fi",      ido:"2ó 20p", kor:"12+", kep:"képek/Kvantumcsapda.png",          vetitesek:{ "IMAX":["17:00","20:30"],"3D":["14:30"] } },
-    { id:10, cim:"Jeges Szívek",          mufaj:"Romantikus",  ido:"1ó 55p", kor:"12+", kep:"képek/Jeges Szívek.png",           vetitesek:{ "2D":["14:30","17:00"],"Szinkronos":["19:30"] } },
-    { id:11, cim:"Arany Kalitka",         mufaj:"Dráma",       ido:"2ó 5p",  kor:"16+", kep:"képek/Arany Kalitka.png",          vetitesek:{ "2D":["18:00","20:30"],"Feliratos":["16:00"] } },
-    { id:12, cim:"Csillagközi Nomád",     mufaj:"Sci-fi",      ido:"2ó 30p", kor:"12+", kep:"képek/Csillagközi Nomád.png",      vetitesek:{ "IMAX":["19:00","22:00"],"4DX":["17:00"] } },
-    { id:13, cim:"Bíbor Maszk",           mufaj:"Akció",       ido:"1ó 58p", kor:"16+", kep:"képek/Bíbor Maszk.png",            vetitesek:{ "2D":["15:30","20:30"],"3D":["18:00"] } },
-    { id:14, cim:"Óceán Hangjai",         mufaj:"Dokumentum",  ido:"1ó 40p", kor:"6+",  kep:"képek/Óceán Hangjai.png",          vetitesek:{ "2D":["11:00","13:30"],"Feliratos":["16:00"] } },
-];
+function isKeddMa() { return new Date().getDay() === 2; }
+function isKivalasztottNapKedd() { return new Date(kivalasztottNap + "T12:00:00").getDay() === 2; }
 
-// ── Állapot ───────────────────────────────────────────────────
-let kivalasztottNap = new Date().toISOString().slice(0, 10);
-let modalKivalasztott = new Set();
-let modalKuponok = new Set();
+// ── Adatok betöltése backendről ───────────────────────────────
+async function betoltAdatok() {
+    try {
+        const [filmRes, arRes, kuponRes] = await Promise.all([
+            fetch(`${API}/filmek`),
+            fetch(`${API}/kuponok/arak`),
+            fetch(`${API}/kuponok`),
+        ]);
+        if (filmRes.ok)  FILMEK    = await filmRes.json();
+        if (arRes.ok)    ALAP_ARAK = await arRes.json();
+        if (kuponRes.ok) {
+            const lista = await kuponRes.json();
+            lista.forEach(k => {
+                KUPONOK[k.kod] = { tipus: k.tipus, ertek: k.ertek, nev: k.nev, limit: k.limit_db, csakKedd: k.csak_kedd === 1 };
+            });
+        }
+    } catch (e) { console.error("Adatok betöltése sikertelen:", e); }
 
-function isKeddMa() {
-    return new Date().getDay() === 2;
+    buildDayBar();
+    buildSzuro();
+    renderFilmek();
 }
+function nyissFilmInfo(filmId) {
+    const film = FILMEK.find(f => f.id === filmId);
+    if (!film) return;
 
-function isKivalasztottNapKedd() {
-    return new Date(kivalasztottNap).getDay() === 2;
+    const meglevo = document.getElementById("filmInfoModal");
+    if (meglevo) meglevo.remove();
+
+    const m = document.createElement("div");
+    m.id = "filmInfoModal";
+    m.style.cssText = "position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.82);display:flex;align-items:center;justify-content:center;padding:1rem;";
+
+    const ido = film.idotartam ? `${Math.floor(film.idotartam/60)} óra ${film.idotartam%60} perc` : "–";
+
+    m.innerHTML = `
+        <div style="background:#0f1628;border:1px solid rgba(255,255,255,0.1);border-radius:16px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;position:relative;">
+            <button id="filmInfoBezar" style="position:absolute;top:1rem;right:1rem;background:transparent;border:none;color:rgba(255,255,255,0.35);font-size:1.5rem;cursor:pointer;line-height:1;">×</button>
+
+            ${film.kep_url ? `
+            <div style="width:100%;border-radius:16px 16px 0 0;overflow:hidden;">
+                <img src="${film.kep_url}" alt="${film.cim}" style="width:100%;height:auto;display:block;">
+            </div>` : `
+            <div style="width:100%;height:120px;background:linear-gradient(135deg,#f7931e,#ff6f00);border-radius:16px 16px 0 0;display:flex;align-items:center;justify-content:center;font-size:3rem;">🎬</div>`}
+
+            <div style="padding:1.5rem;">
+                <div style="font-size:1.15rem;font-weight:700;margin-bottom:0.25rem;">${film.cim}</div>
+                <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1rem;">${film.mufaj} • ${ido} • ${film.korcsoport}</div>
+
+                ${film.leiras ? `<p style="font-size:0.85rem;color:#ccc;line-height:1.6;margin-bottom:1.25rem;">${film.leiras}</p>` : ""}
+
+                <div style="display:flex;flex-direction:column;gap:0.5rem;font-size:0.82rem;border-top:1px solid rgba(255,255,255,0.07);padding-top:1rem;">
+                    <div style="display:flex;gap:0.5rem;">
+                        <span style="color:var(--text-muted);min-width:110px;">Filmműfaj:</span>
+                        <span style="color:#fff;">${film.mufaj}</span>
+                    </div>
+                    <div style="display:flex;gap:0.5rem;">
+                        <span style="color:var(--text-muted);min-width:110px;">Időtartam:</span>
+                        <span style="color:#fff;">${ido}</span>
+                    </div>
+                    <div style="display:flex;gap:0.5rem;">
+                        <span style="color:var(--text-muted);min-width:110px;">Korhatár:</span>
+                        <span style="color:#fff;">${film.korcsoport}</span>
+                    </div>
+                    <div style="display:flex;gap:0.5rem;">
+                        <span style="color:var(--text-muted);min-width:110px;">Vetítési módok:</span>
+                        <span style="color:#fff;">${Object.keys(film.vetitesek || {}).join(", ")}</span>
+                    </div>
+                </div>
+
+                <button onclick="document.getElementById('filmInfoModal').remove()" style="width:100%;margin-top:1.25rem;padding:0.75rem;border-radius:999px;border:none;background:linear-gradient(135deg,#f7931e,#ffb347);color:#1b1305;font-size:0.88rem;font-weight:700;cursor:pointer;letter-spacing:0.06em;text-transform:uppercase;">
+                    Bezárás
+                </button>
+            </div>
+        </div>`;
+
+    document.body.appendChild(m);
+    m.addEventListener("click", e => { if (e.target === m) m.remove(); });
+    document.getElementById("filmInfoBezar").addEventListener("click", () => m.remove());
 }
-
 // ── Nap sáv ───────────────────────────────────────────────────
 function buildDayBar() {
     const bar = document.getElementById("dayBar");
-    const ma  = new Date();
+    bar.innerHTML = "";
+    const ma = new Date();
     for (let i = 0; i < 7; i++) {
         const d = new Date(ma);
         d.setDate(ma.getDate() + i);
@@ -70,31 +125,158 @@ function buildDayBar() {
     }
 }
 
+// ── Szűrő építése ─────────────────────────────────────────────
+function buildSzuro() {
+    const wrapper = document.getElementById("szuroWrapper");
+    if (!wrapper) return;
+
+    // Egyedi értékek összegyűjtése
+    const mufajok    = [...new Set(FILMEK.map(f => f.mufaj))].sort();
+    const formatumok = [...new Set(FILMEK.flatMap(f => Object.keys(f.vetitesek || {})))].sort();
+    const nyelvek    = ["Szinkronos", "Feliratos", "Eredeti nyelv"].filter(n =>
+        formatumok.includes(n)
+    );
+    const tipusok = formatumok.filter(f => !["Szinkronos","Feliratos","Eredeti nyelv"].includes(f));
+
+    wrapper.innerHTML = `
+        <button class="szuro-toggle" id="szuroToggle">
+            🔍 Szűrők
+            <i class="szuro-toggle-nyil">▼</i>
+        </button>
+        <div class="szuro-panel" id="szuroPanel">
+            <div class="szuro-csoport">
+                <div class="szuro-csoport-cim">Műfaj</div>
+                <div class="szuro-chip-lista" id="szuroMufajLista">
+                    ${mufajok.map(m => `<div class="szuro-chip" data-tipus="mufaj" data-ertek="${m}">${m}</div>`).join("")}
+                </div>
+            </div>
+            <div class="szuro-csoport">
+                <div class="szuro-csoport-cim">Előadás típusa</div>
+                <div class="szuro-chip-lista" id="szuroFormatumLista">
+                    ${tipusok.map(f => `<div class="szuro-chip" data-tipus="formatum" data-ertek="${f}">${f}</div>`).join("")}
+                </div>
+            </div>
+            ${nyelvek.length > 0 ? `
+            <div class="szuro-csoport">
+                <div class="szuro-csoport-cim">Nyelv</div>
+                <div class="szuro-chip-lista" id="szuroNyelvLista">
+                    ${nyelvek.map(n => `<div class="szuro-chip" data-tipus="nyelv" data-ertek="${n}">${n}</div>`).join("")}
+                </div>
+            </div>` : ""}
+            <button class="szuro-torles" id="szuroTorles">✕ Szűrők törlése</button>
+        </div>
+        <div class="szuro-eredmeny" id="szuroEredmeny" style="display:none;"></div>
+    `;
+
+    // Toggle
+    document.getElementById("szuroToggle").addEventListener("click", () => {
+        const toggle = document.getElementById("szuroToggle");
+        const panel  = document.getElementById("szuroPanel");
+        toggle.classList.toggle("aktiv");
+        panel.classList.toggle("nyitva");
+    });
+
+    // Chip kattintás
+    wrapper.querySelectorAll(".szuro-chip").forEach(chip => {
+        chip.addEventListener("click", () => {
+            const tipus = chip.dataset.tipus;
+            const ertek = chip.dataset.ertek;
+            chip.classList.toggle("kivalasztott");
+            const halmaz = tipus === "mufaj" ? szuroMufaj : tipus === "formatum" ? szuroFormatum : szuroNyelv;
+            if (halmaz.has(ertek)) halmaz.delete(ertek);
+            else halmaz.add(ertek);
+            renderFilmek();
+        });
+    });
+
+    // Törlés
+    document.getElementById("szuroTorles").addEventListener("click", () => {
+        szuroMufaj.clear(); szuroFormatum.clear(); szuroNyelv.clear();
+        wrapper.querySelectorAll(".szuro-chip").forEach(c => c.classList.remove("kivalasztott"));
+        renderFilmek();
+    });
+}
+
+// ── Szűrt filmek ──────────────────────────────────────────────
+function szurtFilmek() {
+    return FILMEK.filter(film => {
+        // Műfaj szűrő
+        if (szuroMufaj.size > 0 && !szuroMufaj.has(film.mufaj)) return false;
+
+        // Formátum + nyelv szűrő
+        const formatumok = Object.keys(film.vetitesek || {});
+        if (szuroFormatum.size > 0) {
+            const vanFormatum = [...szuroFormatum].some(f => formatumok.includes(f));
+            if (!vanFormatum) return false;
+        }
+        if (szuroNyelv.size > 0) {
+            const vanNyelv = [...szuroNyelv].some(n => formatumok.includes(n));
+            if (!vanNyelv) return false;
+        }
+        return true;
+    });
+}
+
 // ── Film lista ────────────────────────────────────────────────
 function renderFilmek() {
     const lista = document.getElementById("filmLista");
     lista.innerHTML = "";
-    FILMEK.forEach(film => {
+
+    if (FILMEK.length === 0) {
+        lista.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:2rem;">Filmek betöltése...</div>`;
+        return;
+    }
+
+    const megjelenito = szurtFilmek();
+
+    // Eredmény szöveg
+    const eredmenyEl = document.getElementById("szuroEredmeny");
+    const vanSzuro = szuroMufaj.size > 0 || szuroFormatum.size > 0 || szuroNyelv.size > 0;
+    if (eredmenyEl) {
+        if (vanSzuro) {
+            eredmenyEl.style.display = "block";
+            eredmenyEl.innerHTML = `<span>${megjelenito.length}</span> film felel meg a szűrőknek`;
+        } else {
+            eredmenyEl.style.display = "none";
+        }
+    }
+
+    if (megjelenito.length === 0) {
+        lista.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:2rem;">Nincs a szűrőknek megfelelő film.</div>`;
+        return;
+    }
+
+    megjelenito.forEach(film => {
         const sor = document.createElement("div");
         sor.className = "film-sor";
 
         const plakat = document.createElement("div");
         plakat.className = "film-plakat";
-        if (film.kep) {
-            plakat.style.cssText = "width:90px;min-height:130px;flex-shrink:0;overflow:hidden;padding:0;";
-            plakat.innerHTML = `<img src="${film.kep}" alt="${film.cim}" 
-                style="width:100%;height:100%;min-height:130px;object-fit:cover;object-position:center top;display:block;"
-                onerror="this.parentElement.innerHTML='<div style=\\'width:100%;height:130px;display:flex;align-items:center;justify-content:center;font-size:2rem;opacity:0.35;\\'>🎬</div>'">`;
+        if (film.kep_url) {
+            const img = document.createElement("img");
+            img.src = film.kep_url; img.alt = film.cim;
+            img.onerror = () => { plakat.innerHTML = `<div class="film-plakat-placeholder">🎬</div>`; };
+            plakat.appendChild(img);
         } else {
-            plakat.innerHTML = `<div style="width:100%;height:130px;display:flex;align-items:center;justify-content:center;font-size:2rem;opacity:0.35;">🎬</div>`;
+            plakat.innerHTML = `<div class="film-plakat-placeholder">🎬</div>`;
         }
         sor.appendChild(plakat);
 
-        const tagsHtml = Object.keys(film.vetitesek).map(f =>
+        // Szűrt vetítések – ha van aktív szűrő, csak a megfelelő formátumok jelennek meg
+        let vetitesekMegjelenito = film.vetitesek || {};
+        if (szuroFormatum.size > 0 || szuroNyelv.size > 0) {
+            const aktiv = new Set([...szuroFormatum, ...szuroNyelv]);
+            vetitesekMegjelenito = {};
+            Object.entries(film.vetitesek || {}).forEach(([fmt, idok]) => {
+                if (aktiv.size === 0 || aktiv.has(fmt)) vetitesekMegjelenito[fmt] = idok;
+            });
+        }
+
+        const tagsHtml = Object.keys(film.vetitesek || {}).map(f =>
             `<span class="film-tag${f === "IMAX" ? " imax" : f === "4DX" ? " x4d" : ""}">${f}</span>`
         ).join("");
 
-        const vetitesekHtml = Object.entries(film.vetitesek).map(([fmt, idok]) => `
+        const vetitesekHtml = Object.entries(vetitesekMegjelenito).map(([fmt, idok]) => `
             <div class="vetites-blokk">
                 <div class="vetites-formatum">${fmt}</div>
                 <div class="idopont-gombok">
@@ -105,24 +287,34 @@ function renderFilmek() {
                 </div>
             </div>`).join("");
 
+        const ido = film.idotartam ? `${Math.floor(film.idotartam/60)}ó ${film.idotartam%60}p` : "";
+
         const info = document.createElement("div");
         info.className = "film-info";
         info.innerHTML = `
             <div class="film-fejlec">
                 <div>
-                    <div class="film-cim">${film.cim}</div>
-                    <div class="film-meta-sor">
+                <div class="film-cim" onclick="nyissFilmInfo(${film.id})" style="cursor:pointer;" title="Kattints a részletekért">${film.cim} <span style="font-size:0.7rem;color:var(--text-muted);font-weight:400;">ℹ️</span></div>                    <div class="film-meta-sor">
                         <span>${film.mufaj}</span><span class="dot"></span>
-                        <span>${film.ido}</span><span class="dot"></span>
+                        <span>${ido}</span><span class="dot"></span>
                         <span style="display:flex;gap:0.3rem;flex-wrap:wrap;">${tagsHtml}</span>
                     </div>
                 </div>
-                <span class="kor-badge">${film.kor}</span>
+                <span class="kor-badge">${film.korcsoport}</span>
             </div>
             <div class="vetites-blokkok">${vetitesekHtml}</div>`;
         sor.appendChild(info);
         lista.appendChild(sor);
     });
+}
+
+// ── Hero poster foglalás ──────────────────────────────────────
+function heroPosterFoglalas() {
+    if (FILMEK.length === 0) return;
+    const elsoFilm = FILMEK[0];
+    const elsoFormatum = Object.keys(elsoFilm.vetitesek)[0];
+    const elsoIdopont  = elsoFilm.vetitesek[elsoFormatum][0];
+    nyissModal(elsoFilm.id, elsoIdopont, elsoFormatum, elsoFilm.cim);
 }
 
 // ── Visszavonás confirm modal ─────────────────────────────────
@@ -175,12 +367,11 @@ async function nyissModal(filmId, idopont, formatum, filmCim) {
     } catch {}
 
     const sajatSzekAzonositok = new Set(sajatSzekek.map(s => s.szek));
-    const isKedd = isKivalasztottNapKedd();
-    const alapAr = ALAP_ARAK[formatum] || 3500;
-    const user   = typeof getUser === "function" ? getUser() : null;
+    const isKedd  = isKivalasztottNapKedd();
+    const alapAr  = ALAP_ARAK[formatum] || 3500;
+    const user    = typeof getUser === "function" ? getUser() : null;
     const isAdmin = user && user.szerep === "admin";
 
-    // Kupon egyenleg
     const kuponEgyenleg = {};
     if (user) {
         Object.entries(KUPONOK).forEach(([kod, k]) => {
@@ -227,8 +418,8 @@ async function nyissModal(filmId, idopont, formatum, filmCim) {
                     <div style="font-size:0.73rem;color:var(--text-muted);margin-bottom:0.5rem;display:flex;gap:0.4rem;flex-wrap:wrap;">
                         ${Object.entries(kuponEgyenleg).map(([kod, db]) => {
                             const el = db === 0;
-                            return `<span style="padding:0.15rem 0.5rem;border-radius:999px;border:1px solid ${el ? "rgba(255,255,255,0.1)" : "rgba(247,147,30,0.3)"};background:${el ? "rgba(255,255,255,0.03)" : "rgba(247,147,30,0.08)"};color:${el ? "rgba(255,255,255,0.3)" : "#ffb347"};cursor:${el ? "default" : "pointer"};${el ? "text-decoration:line-through;" : ""}"
-                                ${!el ? `onclick="document.getElementById('modalKuponInput').value='${kod}'"` : ""}>
+                            return `<span style="padding:0.15rem 0.5rem;border-radius:999px;border:1px solid ${el?"rgba(255,255,255,0.1)":"rgba(247,147,30,0.3)"};background:${el?"rgba(255,255,255,0.03)":"rgba(247,147,30,0.08)"};color:${el?"rgba(255,255,255,0.3)":"#ffb347"};cursor:${el?"default":"pointer"};${el?"text-decoration:line-through;":""}"
+                                ${!el?`onclick="document.getElementById('modalKuponInput').value='${kod}'"`:""}>
                                 ${kod} (${db}x)</span>`;
                         }).join("")}
                     </div>
@@ -247,13 +438,11 @@ async function nyissModal(filmId, idopont, formatum, filmCim) {
         </div>`;
     document.body.appendChild(modal);
 
-    // ── Szék térkép ───────────────────────────────────────────
     const map = document.getElementById("modalSzekMap");
     for (let s = 0; s < 10; s++) {
         const sor = document.createElement("div"); sor.className = "szek-sor";
         const lbl = document.createElement("div"); lbl.className = "sor-label"; lbl.textContent = SORAZONOSITOK[s];
         sor.appendChild(lbl);
-
         for (let o = 0; o < 15; o++) {
             const azon = `${SORAZONOSITOK[s]}${o + 1}`;
             const szek = document.createElement("div");
@@ -261,7 +450,6 @@ async function nyissModal(filmId, idopont, formatum, filmCim) {
 
             if (tiltottSzekek.has(azon)) {
                 szek.classList.add("tiltott");
-
             } else if (sajatSzekAzonositok.has(azon)) {
                 szek.style.cssText = "background:rgba(100,200,255,0.2);border-color:rgba(100,200,255,0.5);color:#64c8ff;";
                 szek.title = `${azon} – Saját (visszavonható)`;
@@ -275,14 +463,11 @@ async function nyissModal(filmId, idopont, formatum, filmCim) {
                                 headers: { "Authorization": "Bearer " + localStorage.getItem("mozi_token") }
                             });
                             if (r.ok) {
-                                szek.style.cssText = "";
-                                szek.title = azon;
+                                szek.style.cssText = ""; szek.title = azon;
                                 sajatSzekek = sajatSzekek.filter(x => x.szek !== azon);
                                 sajatSzekAzonositok.delete(azon);
                                 szek.addEventListener("click", () => {
-                                    if (!modalKivalasztott.has(azon) && modalKivalasztott.size + sajatSzekek.length >= 8) {
-                                        alert("Maximum 8 helyet foglalhatsz!"); return;
-                                    }
+                                    if (!modalKivalasztott.has(azon) && modalKivalasztott.size + sajatSzekek.length >= 8) { alert("Maximum 8 helyet foglalhatsz!"); return; }
                                     if (modalKivalasztott.has(azon)) { modalKivalasztott.delete(azon); szek.classList.remove("kivalasztott"); }
                                     else { modalKivalasztott.add(azon); szek.classList.add("kivalasztott"); }
                                     frissitModalOsszesito(alapAr, isKedd);
@@ -291,7 +476,6 @@ async function nyissModal(filmId, idopont, formatum, filmCim) {
                         } catch { alert("Szerverhiba."); }
                     });
                 });
-
             } else if (foglaltSzekek.has(azon)) {
                 szek.classList.add("foglalt");
                 if (isAdmin) {
@@ -300,39 +484,21 @@ async function nyissModal(filmId, idopont, formatum, filmCim) {
                     szek.addEventListener("click", () => {
                         visszavonasModal(azon, async () => {
                             try {
-                                const foglRes = await fetch(`${API}/admin/foglalasok`, {
-                                    headers: { "Authorization": "Bearer " + localStorage.getItem("mozi_token") }
-                                });
-                                if (!foglRes.ok) { alert("Nem sikerült lekérni a foglalásokat."); return; }
+                                const foglRes = await fetch(`${API}/admin/foglalasok`, { headers: { "Authorization": "Bearer " + localStorage.getItem("mozi_token") } });
+                                if (!foglRes.ok) { alert("Nem sikerült lekérni."); return; }
                                 const osszes = await foglRes.json();
-                                const talalat = osszes.find(f =>
-                                    String(f.film_id) === String(filmId) &&
-                                    f.idopont === teljesIdopont &&
-                                    f.formatum === formatum &&
-                                    f.allapot === "aktiv" &&
-                                    f.szekek.includes(azon)
-                                );
+                                const talalat = osszes.find(f => String(f.film_id) === String(filmId) && f.idopont === teljesIdopont && f.formatum === formatum && f.allapot === "aktiv" && f.szekek.includes(azon));
                                 if (!talalat) { alert("Nem található a foglalás."); return; }
-                                const r = await fetch(`${API}/foglalasok/admin/${talalat.id}`, {
-                                    method: "DELETE",
-                                    headers: { "Authorization": "Bearer " + localStorage.getItem("mozi_token") }
-                                });
-                                if (r.ok) {
-                                    szek.classList.remove("foglalt");
-                                    szek.style.cursor = "";
-                                    szek.title = azon;
-                                    foglaltSzekek.delete(azon);
-                                } else { const d = await r.json(); alert(d.error || "Hiba."); }
+                                const r = await fetch(`${API}/foglalasok/admin/${talalat.id}`, { method: "DELETE", headers: { "Authorization": "Bearer " + localStorage.getItem("mozi_token") } });
+                                if (r.ok) { szek.classList.remove("foglalt"); szek.style.cursor = ""; szek.title = azon; foglaltSzekek.delete(azon); }
+                                else { const d = await r.json(); alert(d.error || "Hiba."); }
                             } catch { alert("Szerverhiba."); }
                         });
                     });
                 }
-
             } else {
                 szek.addEventListener("click", () => {
-                    if (!modalKivalasztott.has(azon) && modalKivalasztott.size + sajatSzekek.length >= 8) {
-                        alert("Maximum 8 helyet foglalhatsz!"); return;
-                    }
+                    if (!modalKivalasztott.has(azon) && modalKivalasztott.size + sajatSzekek.length >= 8) { alert("Maximum 8 helyet foglalhatsz!"); return; }
                     if (modalKivalasztott.has(azon)) { modalKivalasztott.delete(azon); szek.classList.remove("kivalasztott"); }
                     else { modalKivalasztott.add(azon); szek.classList.add("kivalasztott"); }
                     frissitModalOsszesito(alapAr, isKedd);
@@ -343,55 +509,44 @@ async function nyissModal(filmId, idopont, formatum, filmCim) {
         map.appendChild(sor);
     }
 
-    // ── Eseménykezelők ────────────────────────────────────────
     modal.addEventListener("click", e => { if (e.target === modal) modal.remove(); });
     document.getElementById("modalBezar").addEventListener("click", () => modal.remove());
     document.getElementById("modalVissza")?.addEventListener("click", () => modal.remove());
-    document.getElementById("modalLoginLink")?.addEventListener("click", () => {
-        modal.remove(); document.querySelector(".nav-btn.secondary")?.click();
-    });
+    document.getElementById("modalLoginLink")?.addEventListener("click", () => { modal.remove(); document.querySelector(".nav-btn.secondary")?.click(); });
 
-    // Kupon beváltás
     document.getElementById("modalKuponBtn")?.addEventListener("click", () => {
         const kod = document.getElementById("modalKuponInput").value.trim().toUpperCase();
         const uzenet = document.getElementById("modalKuponUzenet");
-
-        if (!KUPONOK[kod]) {
-            uzenet.textContent = "Érvénytelen kuponkód.";
+        if (!KUPONOK[kod]) { uzenet.textContent = "Érvénytelen kuponkód."; uzenet.className = "kupon-uzenet err"; uzenet.style.display = "block"; return; }
+        if (KUPONOK[kod].csakKedd && !isKedd) { uzenet.textContent = "Ez a kupon csak kedden érvényes!"; uzenet.className = "kupon-uzenet err"; uzenet.style.display = "block"; return; }
+        if (modalKuponok.has(kod)) { uzenet.textContent = "Ezt a kupont már hozzáadtad."; uzenet.className = "kupon-uzenet err"; uzenet.style.display = "block"; return; }
+        // DATE és ROMANTIKUS csak 2 székre érvényes
+        if ((kod === "DATE" || kod === "ROMANTIKUS") && modalKivalasztott.size !== 2) {
+            uzenet.textContent = "Ez a kupon csak pontosan 2 szék foglalásakor érvényes!";
             uzenet.className = "kupon-uzenet err"; uzenet.style.display = "block"; return;
-        }
-        if (KUPONOK[kod].csakKedd && !isKedd) {
-            uzenet.textContent = "Ez a kupon csak kedden érvényes!";
-            uzenet.className = "kupon-uzenet err"; uzenet.style.display = "block"; return;
-        }
-        if (modalKuponok.has(kod)) {
-            uzenet.textContent = "Ezt a kupont már hozzáadtad.";
-            uzenet.className = "kupon-uzenet err"; uzenet.style.display = "block"; return;
-        }
+        }       
         if (user && KUPONOK[kod].limit !== null) {
             const n = parseInt(localStorage.getItem(`kupon_hasznalt_${user.id}_${kod}`) || "0");
-            if (n >= KUPONOK[kod].limit) {
-                uzenet.textContent = `Kupont már felhasználtad (${n}/${KUPONOK[kod].limit}).`;
-                uzenet.className = "kupon-uzenet err"; uzenet.style.display = "block"; return;
-            }
+            if (n >= KUPONOK[kod].limit) { uzenet.textContent = `Kupont már felhasználtad (${n}/${KUPONOK[kod].limit}).`; uzenet.className = "kupon-uzenet err"; uzenet.style.display = "block"; return; }
         }
-
         modalKuponok.add(kod);
         document.getElementById("modalKuponInput").value = "";
-        uzenet.textContent = `✓ ${KUPONOK[kod].nev} hozzáadva!`;
-        uzenet.className = "kupon-uzenet ok"; uzenet.style.display = "block";
-
-        // Aktív kuponok megjelenítése
+        uzenet.textContent = `✓ ${KUPONOK[kod].nev} hozzáadva!`; uzenet.className = "kupon-uzenet ok"; uzenet.style.display = "block";
         const aktivEl = document.getElementById("aktivKuponok");
-        if (aktivEl) {
-            aktivEl.style.display = "block";
-            aktivEl.textContent = "Aktív kuponok: " + [...modalKuponok].map(k => KUPONOK[k].nev).join(", ");
-        }
+if (aktivEl) { aktivEl.style.display = "block"; aktivEl.textContent = "Aktív kuponok: " + [...modalKuponok].map(k => KUPONOK[k].nev).join(", "); }
 
-        frissitModalOsszesito(alapAr, isKedd);
+// Chip frissítése – hozzáadott kupon áthúzva
+const chipek = document.querySelectorAll(`[onclick*="'${kod}'"]`);
+chipek.forEach(chip => {
+    chip.style.textDecoration = "line-through";
+    chip.style.opacity = "0.4";
+    chip.style.cursor = "default";
+    chip.onclick = null;
+});
+
+frissitModalOsszesito(alapAr, isKedd);
     });
 
-    // Foglalás gomb
     document.getElementById("modalFoglalasBtn")?.addEventListener("click", async () => {
         const u = typeof getUser === "function" ? getUser() : null;
         if (!u || modalKivalasztott.size === 0) return;
@@ -401,89 +556,90 @@ async function nyissModal(filmId, idopont, formatum, filmCim) {
             const res = await fetch(`${API}/foglalasok`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "Authorization": "Bearer " + localStorage.getItem("mozi_token") },
-                body: JSON.stringify({
-                    vetites_id: filmId,
-                    szekek: [...modalKivalasztott],
-                    film_id: filmId,
-                    idopont: teljesIdopont,
-                    formatum
-                }),
+                body: JSON.stringify({ vetites_id: filmId, szekek: [...modalKivalasztott], film_id: filmId, idopont: teljesIdopont, formatum }),
             });
             if (res.ok) {
-                // Kupon használatok mentése
                 modalKuponok.forEach(kod => {
+                    // DATE és ROMANTIKUS csak 2 székre számít fel
+                    if ((kod === "DATE" || kod === "ROMANTIKUS") && modalKivalasztott.size !== 2) return;
                     const key = `kupon_hasznalt_${u.id}_${kod}`;
                     localStorage.setItem(key, String(parseInt(localStorage.getItem(key) || "0") + 1));
+                });            
+                // Ár kiszámítása
+                const isKeddSiker = isKivalasztottNapKedd();
+                let egysegSiker = ALAP_ARAK[formatum] || 3500;
+                if (isKeddSiker && modalKuponok.size === 0) egysegSiker = Math.round(egysegSiker * 0.8);
+                modalKuponok.forEach(kod => {
+                    const k = KUPONOK[kod];
+                    if (k.tipus === "fix") egysegSiker = Math.min(egysegSiker, k.ertek);
+                    else egysegSiker = Math.round(egysegSiker * (1 - k.ertek / 100));
                 });
+                if (modalKivalasztott.size >= 4 && modalKuponok.size === 0 && !isKeddSiker) egysegSiker = Math.round(egysegSiker * 0.85);
+                const osszegSiker = egysegSiker * modalKivalasztott.size;
+                const ft = n => n.toLocaleString("hu-HU") + " Ft";
+            
+                // Siker doboz frissítése
+                document.getElementById("modalSiker").innerHTML = `
+                    <div class="siker-ikon">🎉</div>
+                    <div class="siker-cim">Foglalás sikeres!</div>
+                    <div class="siker-szov">Jegyeid le lettek foglalva.<br>A pénztárnál add meg a neved vagy e-mail címed.</div>
+                    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:0.85rem 1rem;margin:1rem 0;text-align:left;font-size:0.84rem;">
+                        <div style="display:flex;justify-content:space-between;margin-bottom:0.4rem;">
+                            <span style="color:var(--text-muted);">Lefoglalt székek:</span>
+                            <span style="color:#fff;font-weight:600;">${[...modalKivalasztott].sort().join(", ")}</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;margin-bottom:0.4rem;">
+                            <span style="color:var(--text-muted);">Jegyek száma:</span>
+                            <span style="color:#fff;">${modalKivalasztott.size} db</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;border-top:1px solid rgba(255,255,255,0.07);padding-top:0.4rem;margin-top:0.4rem;">
+                            <span style="color:var(--text-muted);">Végösszeg:</span>
+                            <span style="color:#ffcc00;font-weight:700;font-size:1rem;">${ft(osszegSiker)}</span>
+                        </div>
+                    </div>
+                    <button class="vissza-btn" id="modalVissza">Bezárás</button>
+                `;
+            
                 document.getElementById("modalTartalom").style.display = "none";
                 document.getElementById("modalSiker").style.display = "block";
-            } else {
-                const d = await res.json();
-                alert(d.error || "Hiba történt.");
-                btn.disabled = false; btn.textContent = "Jegyek foglalása";
-            }
-        } catch {
-            alert("Szerverhiba.");
-            btn.disabled = false; btn.textContent = "Jegyek foglalása";
-        }
+                document.getElementById("modalVissza").addEventListener("click", () => modal.remove());
+            } else { const d = await res.json(); alert(d.error || "Hiba."); btn.disabled = false; btn.textContent = "Jegyek foglalása"; }
+        } catch { alert("Szerverhiba."); btn.disabled = false; btn.textContent = "Jegyek foglalása"; }
     });
 
     frissitModalOsszesito(alapAr, isKedd);
 }
 
-// ── Összesítő frissítés ───────────────────────────────────────
+// ── Összesítő ─────────────────────────────────────────────────
 function frissitModalOsszesito(alapAr, isKedd) {
     const sorok  = document.getElementById("modalOsszesitoSorok");
     const btn    = document.getElementById("modalFoglalasBtn");
     const loginW = document.getElementById("modalLoginWarn");
     const darab  = modalKivalasztott.size;
 
-    if (darab === 0) {
-        sorok.innerHTML = `<div class="osszesito-sor"><span>Nincs kiválasztott szék</span><span>–</span></div>`;
-        if (btn) btn.disabled = true; return;
-    }
+    if (darab === 0) { sorok.innerHTML = `<div class="osszesito-sor"><span>Nincs kiválasztott szék</span><span>–</span></div>`; if (btn) btn.disabled = true; return; }
 
-    let egyseg = alapAr;
-    let kedvNevek = [];
-
-    // Keddi kedvezmény ha nincs más kupon
-    if (isKedd && modalKuponok.size === 0) {
-        egyseg = Math.round(egyseg * 0.8);
-        kedvNevek.push("Keddi -20%");
-    }
-
-    // Kuponok alkalmazása sorban
+    let egyseg = alapAr; let kedvNevek = [];
+    if (isKedd && modalKuponok.size === 0) { egyseg = Math.round(egyseg * 0.8); kedvNevek.push("Keddi -20%"); }
     modalKuponok.forEach(kod => {
-        const k = KUPONOK[kod];
-        if (k.tipus === "fix") {
-            egyseg = Math.min(egyseg, k.ertek);
-        } else {
-            egyseg = Math.round(egyseg * (1 - k.ertek / 100));
+        // DATE és ROMANTIKUS csak 2 székre érvényes
+        if ((kod === "DATE" || kod === "ROMANTIKUS") && darab !== 2) {
+            kedvNevek.push(`${KUPONOK[kod].nev} ⚠️ (csak 2 székre érvényes)`);
+            return;
         }
+        const k = KUPONOK[kod];
+        if (k.tipus === "fix") { egyseg = Math.min(egyseg, k.ertek); } else { egyseg = Math.round(egyseg * (1 - k.ertek / 100)); }
         kedvNevek.push(k.nev);
     });
-
-    // Családi kedvezmény ha nincs kupon és nem kedd
-    if (darab >= 4 && modalKuponok.size === 0 && !isKedd) {
-        egyseg = Math.round(egyseg * 0.85);
-        kedvNevek.push("Családi -15%");
-    }
+    if (darab >= 4 && modalKuponok.size === 0 && !isKedd) { egyseg = Math.round(egyseg * 0.85); kedvNevek.push("Családi -15%"); }
 
     const osszeg = egyseg * darab;
     const ft = n => n.toLocaleString("hu-HU") + " Ft";
     const szekLista = [...modalKivalasztott].sort().join(", ");
 
-    let html = `
-        <div class="osszesito-sor"><span>Kiválasztott székek</span><span style="color:#fff;">${szekLista}</span></div>
-        <div class="osszesito-sor"><span>Alapár / jegy</span><span>${ft(alapAr)}</span></div>`;
-
-    if (kedvNevek.length > 0) {
-        html += `<div class="osszesito-sor" style="color:#4caf50;"><span>Kedvezmény <span class="kedv-badge">${kedvNevek.join(" + ")}</span></span><span>${ft(egyseg)}/jegy</span></div>`;
-    }
-
-    html += `
-        <div class="osszesito-sor"><span>${darab} db × ${ft(egyseg)}</span><span></span></div>
-        <div class="osszesito-sor total"><span>Összesen</span><span>${ft(osszeg)}</span></div>`;
+    let html = `<div class="osszesito-sor"><span>Kiválasztott székek</span><span style="color:#fff;">${szekLista}</span></div><div class="osszesito-sor"><span>Alapár / jegy</span><span>${ft(alapAr)}</span></div>`;
+    if (kedvNevek.length > 0) html += `<div class="osszesito-sor" style="color:#4caf50;"><span>Kedvezmény <span class="kedv-badge">${kedvNevek.join(" + ")}</span></span><span>${ft(egyseg)}/jegy</span></div>`;
+    html += `<div class="osszesito-sor"><span>${darab} db × ${ft(egyseg)}</span><span></span></div><div class="osszesito-sor total"><span>Összesen</span><span>${ft(osszeg)}</span></div>`;
     sorok.innerHTML = html;
 
     const u = typeof getUser === "function" ? getUser() : null;
@@ -492,7 +648,4 @@ function frissitModalOsszesito(alapAr, isKedd) {
 }
 
 // ── Init ──────────────────────────────────────────────────────
-document.addEventListener("DOMContentLoaded", () => {
-    buildDayBar();
-    renderFilmek();
-});
+document.addEventListener("DOMContentLoaded", betoltAdatok);

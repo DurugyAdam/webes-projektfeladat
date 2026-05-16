@@ -7,6 +7,7 @@
     <title>MoziFoglaló – Műsoron</title>
     <link rel="stylesheet" href="main_page.css">
     <link rel="stylesheet" href="musoron.css">
+    <link rel="stylesheet" href="szuro.css">
 </head>
 <body>
 
@@ -32,7 +33,7 @@
             <h1 class="hero-title">Foglalj <span>jegyet</span> kedvenc filmedre.</h1>
             <p class="hero-subtitle">Válaszd ki a napot, a filmet és az időpontot – a jegyed máris a tiéd.</p>
             <div class="hero-meta">
-                <span><span class="hero-meta-dot"></span> Budapest, Debrecen, Győr és több város</span>
+                <span><span class="hero-meta-dot"></span> Budapest</span>
                 <span><span class="hero-meta-dot"></span> 2D, 3D, IMAX, 4DX</span>
             </div>
         </div>
@@ -46,16 +47,16 @@
                 </div>
                 <div class="hero-poster-footer">
                     <div class="hero-poster-times">
-                        <span class="time-pill">16:30</span>
-                        <span class="time-pill">18:45</span>
-                        <span class="time-pill">21:10</span>
+                        <span class="time-pill" onclick="nyissModal(1,'13:00','2D','Galaktikus Küldetés')" style="cursor:pointer;">13:00</span>
+                        <span class="time-pill" onclick="nyissModal(1,'16:30','2D','Galaktikus Küldetés')" style="cursor:pointer;">16:30</span>
+                        <span class="time-pill" onclick="nyissModal(1,'20:00','IMAX','Galaktikus Küldetés')" style="cursor:pointer;">IMAX</span>
                     </div>
-                    <button class="hero-poster-cta">Jegyet veszek</button>
+                    <button class="hero-poster-cta" onclick="nyissModal(1,'15:00','IMAX','Galaktikus Küldetés')">Jegyet veszek</button>
                 </div>
             </div>
         </aside>
     </section>
-
+    <div class="szuro-wrapper" id="szuroWrapper"></div>
     <div class="day-bar" id="dayBar"></div>
     <div class="film-lista" id="filmLista"></div>
 </main>
