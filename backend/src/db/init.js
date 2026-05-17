@@ -78,14 +78,7 @@ function initDb(dbPath = DB_PATH) {
             UNIQUE(film_id, idopont, formatum, szek_azonosito)
         );
 
-        CREATE TABLE IF NOT EXISTS rendelesek (
-            id             INTEGER PRIMARY KEY AUTOINCREMENT,
-            felhasznalo_id INTEGER NOT NULL REFERENCES felhasznalok(id),
-            tetelek        TEXT    NOT NULL,
-            osszeg         INTEGER NOT NULL,
-            allapot        TEXT    NOT NULL DEFAULT 'leadva',
-            letrehozva     DATETIME DEFAULT CURRENT_TIMESTAMP
-        );
+
     `);
 
     // ── Alap árak seed ────────────────────────────────────────
