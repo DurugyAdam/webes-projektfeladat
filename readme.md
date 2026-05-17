@@ -32,7 +32,14 @@ git clone https://github.com/DurugyAdam/webes-projektfeladat.git
 cd webes-projektfeladat
 ```
 
-### 2. lépés – Backend szerver indítása
+### 2. lépés – Backend függőségek telepítése
+
+```bash
+cd backend
+npm install
+```
+
+### 3. lépés – Backend szerver indítása
 
 ```bash
 node src/app.js
@@ -40,7 +47,7 @@ node src/app.js
 
 A szerver elindul: `http://localhost:3000`
 
-### 3. lépés – Frontend megnyitása
+### 4. lépés – Frontend megnyitása
 
 Nyisd meg a `műsoron.html` fájlt egy **Live Server** segítségével:
 
